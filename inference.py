@@ -43,6 +43,10 @@ SYSTEM_PROMPT = textwrap.dedent(
     - cap_outliers: Handle extreme values
     - validate_constraints: Validate data constraints
     - submit: Submit the cleaned dataset
+
+    Target column guidance:
+    - Use target_columns=["*"] when an operation should apply to the whole dataset.
+    - deduplicate often works best with target_columns=["*"] unless a specific subset is required.
     
     For each action, respond with a JSON dict:
     {"operation": "<op>", "target_columns": [...], "parameters": {...}}
@@ -89,6 +93,7 @@ def build_user_prompt(
         Dataset: {obs_dict.get('dataset_id', 'unknown')}
         Quality Report: {obs_dict.get('quality_report', {})}
         Validation Status: {obs_dict.get('validation_passed', False)}
+        Governance Warning: {obs_dict.get('governance_warning', None)}
         Steps Remaining: {obs_dict.get('step_budget_remaining', 0)}
         Last Reward: {last_reward:.2f}
         

@@ -38,6 +38,7 @@ class DataQualityTriageEnv:
                 "governance_events": [],
                 "invalid_action_count": 0,
                 "dataset_rows": len(self._dataset),
+                "governance_warning": None,
             },
         )
         return self._to_observation()
@@ -147,6 +148,7 @@ class DataQualityTriageEnv:
         governance_events = list(notes.get("governance_events", []))
         governance_events.append(governance)
         notes["governance_events"] = governance_events
+        notes["governance_warning"] = governance.get("recommendations", [None])[0] if governance.get("flags") else None
         state.notes = notes
 
         done = state.submitted or state.step_count >= state.step_budget
@@ -261,6 +263,7 @@ class DataQualityTriageEnv:
             schema_summary=schema_summary,
             quality_report=deepcopy(state.quality_report),
             validation_passed=state.validation_passed,
+            governance_warning=(state.notes or {}).get("governance_warning"),
             action_history=deepcopy(state.action_history),
             step_budget_remaining=max(0, state.step_budget - state.step_count),
         )

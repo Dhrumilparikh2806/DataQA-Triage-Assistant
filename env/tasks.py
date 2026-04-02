@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict
 
 
@@ -11,6 +11,12 @@ class TaskDefinition:
     initial_quality_report: Dict[str, int]
     target_quality_report: Dict[str, int]
     schema_constraints: Dict[str, Any]
+    dataset_mode: str = "synthetic"
+    hf_dataset_name: str | None = None
+    hf_dataset_config: str | None = None
+    hf_dataset_split: str = "train"
+    hf_dataset_limit: int = 1000
+    hf_column_map: Dict[str, tuple[str, ...]] = field(default_factory=dict)
 
 
 TASKS: Dict[str, TaskDefinition] = {
@@ -41,6 +47,15 @@ TASKS: Dict[str, TaskDefinition] = {
             "require_unique_order_id": True,
             "require_valid_timestamps": True,
         },
+        dataset_mode="real_world_ready",
+        hf_dataset_name="phihung/titanic",
+        hf_dataset_split="train",
+        hf_dataset_limit=891,
+        hf_column_map={
+            "order_id": ("PassengerId",),
+            "amount": ("Fare",),
+            "region": ("Embarked",),
+        },
     ),
     "medium_type_and_category": TaskDefinition(
         task_id="medium_type_and_category",
@@ -69,12 +84,20 @@ TASKS: Dict[str, TaskDefinition] = {
             "require_unique_order_id": True,
             "require_valid_timestamps": True,
         },
+        dataset_mode="real_world_ready",
+        hf_dataset_name="scikit-learn/adult-census-income",
+        hf_dataset_split="train",
+        hf_dataset_limit=1000,
+        hf_column_map={
+            "amount": ("capital.gain", "capital.loss", "hours.per.week"),
+            "region": ("native.country",),
+        },
     ),
     "hard_conflicts_and_budget": TaskDefinition(
         task_id="hard_conflicts_and_budget",
         dataset_id="finance_hard_v3",
         difficulty="hard",
-        step_budget=9,
+        step_budget=12,
         initial_quality_report={
             "missing_values": 17,
             "duplicates": 7,
@@ -96,6 +119,14 @@ TASKS: Dict[str, TaskDefinition] = {
             "amount_max": 5000.0,
             "require_unique_order_id": True,
             "require_valid_timestamps": True,
+        },
+        dataset_mode="real_world_ready",
+        hf_dataset_name="cestwc/bank-marketing",
+        hf_dataset_split="train",
+        hf_dataset_limit=1000,
+        hf_column_map={
+            "amount": ("balance",),
+            "region": ("job", "education"),
         },
     ),
 }

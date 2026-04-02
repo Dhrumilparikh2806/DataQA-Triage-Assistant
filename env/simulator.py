@@ -1,5 +1,7 @@
 import csv
+import hashlib
 import json
+import os
 import random
 from copy import deepcopy
 from datetime import datetime
@@ -8,6 +10,12 @@ from statistics import median
 from typing import Any, Dict, List, Tuple
 
 from .models import Action
+from .tasks import get_task
+
+try:
+    from datasets import load_dataset  # type: ignore
+except Exception:  # pragma: no cover - optional dependency
+    load_dataset = None
 
 ALLOWED_REGIONS = ["North", "South", "East", "West"]
 COLUMN_ALIASES = {
@@ -66,6 +74,150 @@ def _load_dataset_from_csv(task_id: str) -> List[Dict[str, Any]] | None:
     return dataset
 
 
+def _load_dataset_from_hf(name: str, split: str, limit: int, config: str | None = None) -> List[Dict[str, Any]] | None:
+    if load_dataset is None:
+        return None
+
+    try:
+        if config:
+            dataset = load_dataset(name, config, split=split)
+        else:
+            dataset = load_dataset(name, split=split)
+    except Exception:
+        return None
+
+    rows = []
+    for idx, row in enumerate(dataset):
+        if idx >= limit:
+            break
+        rows.append(dict(row))
+    return rows or None
+
+
+def _synthetic_order_id(row: Dict[str, Any]) -> str:
+    payload = json.dumps(row, sort_keys=True, default=str, ensure_ascii=True).encode("utf-8")
+    digest = hashlib.sha1(payload).hexdigest()[:12]
+    return f"HF-{digest}"
+
+
+def _coerce_scalar(value: Any) -> Any:
+    if isinstance(value, (int, float)):
+        return float(value)
+    if value is None:
+        return None
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        try:
+            return float(text.replace(",", ""))
+        except ValueError:
+            return text
+    return str(value)
+
+
+def _looks_like_timestamp(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    text = value.strip()
+    if len(text) < 8:
+        return False
+    return any(token in text for token in ("-", "/", ":", "T"))
+
+
+def _canonicalize_hf_row(row: Dict[str, Any], index: int, column_map: Dict[str, tuple[str, ...]] | None = None) -> Dict[str, Any]:
+    column_map = column_map or {}
+    keys = list(row.keys())
+    lowered = {key.lower(): key for key in keys}
+
+    def pick_value(field_name: str, preferred_names: List[str], fallback_predicate) -> Any:
+        for candidate_name in preferred_names:
+            if candidate_name in lowered:
+                value = row.get(lowered[candidate_name])
+                if value not in (None, ""):
+                    return value
+        for key in keys:
+            value = row.get(key)
+            if fallback_predicate(key, value):
+                return value
+        return None
+
+    order_id = pick_value(
+        "order_id",
+        list(column_map.get("order_id", ())) + ["order_id", "id", "passengerid", "customer_id", "customerid", "row_id", "index"],
+        lambda key, value: key.lower().endswith("id") or key.lower() == "id",
+    )
+    amount = pick_value(
+        "amount",
+        list(column_map.get("amount", ())) + ["amount", "fare", "price", "income", "sales", "revenue", "salary", "balance", "capital-gain", "capital-loss", "hours-per-week"],
+        lambda key, value: isinstance(value, (int, float)) or str(value).replace(".", "", 1).isdigit(),
+    )
+    region = pick_value(
+        "region",
+        list(column_map.get("region", ())) + ["region", "country", "state", "city", "embarked", "class", "workclass", "occupation", "category", "native-country", "job", "education"],
+        lambda key, value: isinstance(value, str) and len(str(value)) <= 24,
+    )
+    timestamp = pick_value(
+        "timestamp",
+        list(column_map.get("timestamp", ())) + ["timestamp", "date", "datetime", "order_date", "created_at", "time", "day", "month"],
+        lambda key, value: _looks_like_timestamp(value),
+    )
+
+    order_id = order_id if order_id not in (None, "") else _synthetic_order_id(row)
+    amount = _coerce_scalar(amount)
+
+    if timestamp in (None, ""):
+        day = row.get("day")
+        month = row.get("month")
+        try:
+            if day not in (None, "") and month not in (None, ""):
+                month_text = str(month).strip()[:3].title()
+                month_lookup = {
+                    "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
+                    "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
+                }
+                month_num = month_lookup.get(month_text)
+                if month_num is not None:
+                    timestamp = f"2024-{month_num:02d}-{int(day):02d}T12:00:00"
+        except Exception:
+            timestamp = None
+    if timestamp in (None, ""):
+        timestamp = f"2024-01-{(index % 28) + 1:02d}T12:00:00"
+
+    if region in (None, ""):
+        region = "North"
+
+    return {
+        "order_id": str(order_id),
+        "amount": amount,
+        "region": str(region),
+        "timestamp": str(timestamp),
+    }
+
+
+def _load_real_dataset_rows(task_id: str, row_limit: int) -> List[Dict[str, Any]] | None:
+    task = get_task(task_id)
+    dataset_name = os.getenv("REAL_DATASET_NAME") or task.hf_dataset_name
+    if not dataset_name:
+        return None
+
+    split = os.getenv("REAL_DATASET_SPLIT") or task.hf_dataset_split or "train"
+    config = os.getenv("REAL_DATASET_CONFIG") or task.hf_dataset_config
+    limit_raw = os.getenv("REAL_DATASET_LIMIT")
+    limit = row_limit
+    if limit_raw:
+        try:
+            limit = max(1, int(limit_raw))
+        except ValueError:
+            limit = row_limit
+
+    raw_rows = _load_dataset_from_hf(dataset_name, split, limit, config)
+    if raw_rows is None:
+        return None
+
+    return [_canonicalize_hf_row(row, idx, task.hf_column_map) for idx, row in enumerate(raw_rows)]
+
+
 def _row_key(row: Dict[str, Any]) -> Tuple[Any, ...]:
     return (
         row.get("order_id"),
@@ -83,17 +235,27 @@ def _canonical_region(value: Any) -> str:
         "n": "North",
         "north": "North",
         "north-east": "North",
-        "s": "South",
-        "south": "South",
+        "c": "East",
         "e": "East",
         "east": "East",
+        "s": "South",
+        "south": "South",
         "w": "West",
         "west": "West",
+        "q": "West",
     }
-    return mapping.get(text, "North")
+    if text in mapping:
+        return mapping[text]
+    buckets = ["North", "South", "East", "West"]
+    digest = hashlib.sha1(text.encode("utf-8")).hexdigest()
+    return buckets[int(digest[:8], 16) % len(buckets)]
 
 
 def build_task_dataset(task_id: str, initial_quality_report: Dict[str, int]) -> List[Dict[str, Any]]:
+    real_rows = _load_real_dataset_rows(task_id, max(200, _fixture_rows(task_id)))
+    if real_rows is not None:
+        return real_rows
+
     file_dataset = _load_dataset_from_csv(task_id)
     if file_dataset is not None:
         return file_dataset

@@ -27,6 +27,7 @@ class Observation(BaseModel):
     schema_summary: Dict[str, str]
     quality_report: Dict[str, int]
     validation_passed: bool
+    governance_warning: Optional[str] = None
     action_history: List[str] = Field(default_factory=list)
     step_budget_remaining: int
 

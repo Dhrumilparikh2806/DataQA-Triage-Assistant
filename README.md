@@ -114,6 +114,10 @@ Action operations:
 - validate_constraints
 - submit
 
+Target column wildcard:
+- You can pass target_columns=["*"] to apply an operation across the whole dataset.
+- This is especially useful for deduplicate when you want full-row duplicate removal.
+
 ## Tasks
 
 Configured tasks:
@@ -225,6 +229,9 @@ Defaults in script:
 - API_BASE_URL = https://router.huggingface.co/v1
 - MODEL_NAME = Qwen/Qwen2.5-72B-Instruct
 
+Prompting tip for better baseline quality:
+- Explicitly use target_columns=["*"] for global operations (especially deduplicate) instead of hallucinating per-column lists.
+
 ## Reproducibility
 
 This project is deterministic by design:
@@ -234,6 +241,25 @@ This project is deterministic by design:
 
 Expected outcomes:
 - repeated runs of the same action plan on same task yield same final score and step count
+
+## Real Dataset Mode
+
+The environment now prefers real Hugging Face datasets at reset time and falls back to the deterministic fixtures only when loading fails.
+
+Default task sources:
+- easy_missing_and_dupes -> `phihung/titanic`
+- medium_type_and_category -> `scikit-learn/adult-census-income`
+- hard_conflicts_and_budget -> `cestwc/bank-marketing`
+
+You can override the dataset source with these env vars:
+- REAL_DATASET_NAME
+- REAL_DATASET_CONFIG
+- REAL_DATASET_SPLIT (defaults to the task's split or `train`)
+- REAL_DATASET_LIMIT
+
+The loader canonicalizes the source rows into the benchmark schema, then computes the baseline quality report directly from the loaded data at `reset()`.
+That means the difficulty profile is driven by the actual dataset rows, not by a synthetic error counter.
+If the dataset library is unavailable or the remote dataset cannot be loaded, the environment falls back to the built-in fixtures so the benchmark still runs deterministically.
 
 ## Hugging Face Space Deployment
 

@@ -67,7 +67,6 @@ def ui() -> FileResponse:
         },
     )
 
-
 @app.get("/health")
 def health() -> Dict[str, str]:
     return {"status": "ok"}
