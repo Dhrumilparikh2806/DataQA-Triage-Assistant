@@ -543,6 +543,44 @@
     margin-bottom: 10px;
   }
 
+  .playground-split {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .playground-side {
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    background: #fcfcfb;
+    padding: 10px;
+  }
+
+  .playground-side-title {
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 8px;
+  }
+
+  .playground-kv {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 11px;
+  }
+
+  .playground-kv-key { color: var(--text-secondary); }
+  .playground-kv-val {
+    color: var(--text-primary);
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+
   .playground-input {
     width: 100%;
     border: 1px solid var(--border);
@@ -555,7 +593,7 @@
   }
 
   .playground-status {
-    margin-top: 8px;
+    margin-top: 0;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -566,6 +604,16 @@
     background: var(--emerald-soft);
     color: #065f46;
     font-family: 'DM Mono', monospace;
+  }
+
+  @media (max-width: 980px) {
+    .playground-controls {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .playground-split {
+      grid-template-columns: 1fr;
+    }
   }
 
   .reward-bar-label {
@@ -1213,10 +1261,24 @@
                   <button class="btn" onclick="startNewRun()">Reset</button>
                   <button class="btn" onclick="playgroundGetState()">Get state</button>
                 </div>
-                <div id="playground-status" class="playground-status">● ready</div>
-                <div class="obs-box" id="playground-raw-response" style="margin-top:10px;max-height:240px;overflow:auto">{
+                <div class="playground-split">
+                  <div>
+                    <div class="playground-side-title">Raw JSON response</div>
+                    <div class="obs-box" id="playground-raw-response" style="max-height:260px;overflow:auto">{
   "message": "Raw JSON response will appear here"
 }</div>
+                  </div>
+                  <div class="playground-side">
+                    <div class="playground-side-title">Status</div>
+                    <div id="playground-status" class="playground-status">● ready</div>
+                    <div style="margin-top:10px">
+                      <div class="playground-kv"><span class="playground-kv-key">task</span><span id="playground-task" class="playground-kv-val">easy_missing_and_dupes</span></div>
+                      <div class="playground-kv"><span class="playground-kv-key">last action</span><span id="playground-last-action" class="playground-kv-val">none</span></div>
+                      <div class="playground-kv"><span class="playground-kv-key">step</span><span id="playground-last-step" class="playground-kv-val">0</span></div>
+                      <div class="playground-kv"><span class="playground-kv-key">submitted</span><span id="playground-last-submitted" class="playground-kv-val">false</span></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1980,6 +2042,25 @@
     }
   }
 
+  function updatePlaygroundMeta({ action = null, step = null, submitted = null } = {}) {
+    const taskEl = document.getElementById("playground-task");
+    const actionEl = document.getElementById("playground-last-action");
+    const stepEl = document.getElementById("playground-last-step");
+    const submittedEl = document.getElementById("playground-last-submitted");
+    if (taskEl) {
+      taskEl.textContent = SESSION.selectedTask;
+    }
+    if (actionEl && action !== null) {
+      actionEl.textContent = String(action);
+    }
+    if (stepEl && step !== null) {
+      stepEl.textContent = String(step);
+    }
+    if (submittedEl && submitted !== null) {
+      submittedEl.textContent = String(Boolean(submitted));
+    }
+  }
+
   function parseTargetColumns(rawText) {
     if (!rawText || !rawText.trim()) {
       return [];
@@ -2300,6 +2381,7 @@
       appendStepLog("reset()", `→ env initialized, task: ${SESSION.selectedTask}`, "ok");
       renderPlaygroundJson({ observation: resetResult, source: "reset" });
       setPlaygroundStatus("reset complete", "ok");
+      updatePlaygroundMeta({ action: "reset", step: 0, submitted: false });
       await refreshFromServer();
       showScreen("runner");
     } catch (err) {
@@ -2338,6 +2420,7 @@
       }
       renderPlaygroundJson({ step: result, source: "step" });
       setPlaygroundStatus(result.info?.invalid_action ? "step completed with warning" : "step completed", result.info?.invalid_action ? "warn" : "ok");
+      updatePlaygroundMeta({ action: operation, step: result.info?.step_count ?? 0, submitted: result.info?.submitted ?? false });
       return result;
     } catch (err) {
       appendStepLog(`${operation}()`, `→ failed: ${err.message}`, "error");
@@ -2358,6 +2441,7 @@
       const state = await api("/state");
       renderPlaygroundJson({ state, source: "state" });
       setPlaygroundStatus("state fetched", "ok");
+      updatePlaygroundMeta({ action: "get_state", step: state.step_count ?? 0, submitted: state.submitted ?? false });
       renderApiSettings(state);
     } catch (err) {
       setPlaygroundStatus("state fetch failed", "error");
@@ -2485,6 +2569,7 @@
       validation_passed: false,
     });
     setPlaygroundStatus("ready", "ok");
+    updatePlaygroundMeta({ action: "none", step: 0, submitted: false });
     openLevelBriefing(SESSION.selectedTask);
   });
 </script>
