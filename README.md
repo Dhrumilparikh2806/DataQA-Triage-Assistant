@@ -5,11 +5,11 @@ colorFrom: blue
 colorTo: green
 sdk: docker
 app_port: 7860
+base_path: /ui
 tags:
   - openenv
   - data-analysis
   - evaluation
-base_path: /web
 ---
 
 # Data Quality Triage Assistant (OpenEnv)
