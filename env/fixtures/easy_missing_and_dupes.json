@@ -1,0 +1,6 @@
+{
+  "task_id": "easy_missing_and_dupes",
+  "dataset_id": "sales_small_v1",
+  "rows": 120,
+  "notes": "Deterministic easy fixture with missing values and duplicates."
+}

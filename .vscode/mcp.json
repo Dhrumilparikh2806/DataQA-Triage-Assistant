@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "space-audit": {
+      "type": "stdio",
+      "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+      "args": [
+        "${workspaceFolder}\\mcp_space_audit.py"
+      ]
+    }
+  }
+}

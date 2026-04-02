@@ -1,0 +1,108 @@
+from dataclasses import dataclass
+from typing import Any, Dict
+
+
+@dataclass(frozen=True)
+class TaskDefinition:
+    task_id: str
+    dataset_id: str
+    difficulty: str
+    step_budget: int
+    initial_quality_report: Dict[str, int]
+    target_quality_report: Dict[str, int]
+    schema_constraints: Dict[str, Any]
+
+
+TASKS: Dict[str, TaskDefinition] = {
+    "easy_missing_and_dupes": TaskDefinition(
+        task_id="easy_missing_and_dupes",
+        dataset_id="sales_small_v1",
+        difficulty="easy",
+        step_budget=8,
+        initial_quality_report={
+            "missing_values": 12,
+            "duplicates": 5,
+            "invalid_types": 0,
+            "category_inconsistency": 0,
+            "outliers": 1,
+        },
+        target_quality_report={
+            "missing_values": 0,
+            "duplicates": 0,
+            "invalid_types": 0,
+            "category_inconsistency": 0,
+            "outliers": 0,
+        },
+        schema_constraints={
+            "required_columns": ["order_id", "amount", "region", "timestamp"],
+            "allowed_regions": ["North", "South", "East", "West"],
+            "amount_min": 0.0,
+            "amount_max": 5000.0,
+            "require_unique_order_id": True,
+            "require_valid_timestamps": True,
+        },
+    ),
+    "medium_type_and_category": TaskDefinition(
+        task_id="medium_type_and_category",
+        dataset_id="ops_medium_v2",
+        difficulty="medium",
+        step_budget=10,
+        initial_quality_report={
+            "missing_values": 9,
+            "duplicates": 4,
+            "invalid_types": 8,
+            "category_inconsistency": 11,
+            "outliers": 4,
+        },
+        target_quality_report={
+            "missing_values": 0,
+            "duplicates": 0,
+            "invalid_types": 0,
+            "category_inconsistency": 0,
+            "outliers": 1,
+        },
+        schema_constraints={
+            "required_columns": ["order_id", "amount", "region", "timestamp"],
+            "allowed_regions": ["North", "South", "East", "West"],
+            "amount_min": 0.0,
+            "amount_max": 5000.0,
+            "require_unique_order_id": True,
+            "require_valid_timestamps": True,
+        },
+    ),
+    "hard_conflicts_and_budget": TaskDefinition(
+        task_id="hard_conflicts_and_budget",
+        dataset_id="finance_hard_v3",
+        difficulty="hard",
+        step_budget=9,
+        initial_quality_report={
+            "missing_values": 17,
+            "duplicates": 7,
+            "invalid_types": 13,
+            "category_inconsistency": 14,
+            "outliers": 10,
+        },
+        target_quality_report={
+            "missing_values": 1,
+            "duplicates": 0,
+            "invalid_types": 0,
+            "category_inconsistency": 0,
+            "outliers": 2,
+        },
+        schema_constraints={
+            "required_columns": ["order_id", "amount", "region", "timestamp"],
+            "allowed_regions": ["North", "South", "East", "West"],
+            "amount_min": 0.0,
+            "amount_max": 5000.0,
+            "require_unique_order_id": True,
+            "require_valid_timestamps": True,
+        },
+    ),
+}
+
+
+def get_task(task_id: str) -> TaskDefinition:
+    if task_id not in TASKS:
+        available = ", ".join(sorted(TASKS.keys()))
+        raise ValueError(f"Unknown task_id '{task_id}'. Available: {available}")
+    return TASKS[task_id]
