@@ -1,0 +1,6 @@
+{
+  "task_id": "medium_type_and_category",
+  "dataset_id": "ops_medium_v2",
+  "rows": 540,
+  "notes": "Deterministic medium fixture with type and category consistency issues."
+}

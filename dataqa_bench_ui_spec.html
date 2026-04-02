@@ -1,0 +1,2363 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --sidebar-bg: #0e0f11;
+    --sidebar-text: #a1a1aa;
+    --sidebar-active: #ffffff;
+    --sidebar-accent: #6366f1;
+    --canvas: #f8f8f7;
+    --surface: #ffffff;
+    --border: #e4e4e7;
+    --border-soft: #f0f0ef;
+    --text-primary: #111112;
+    --text-secondary: #71717a;
+    --text-mono: #3d3d3a;
+    --indigo: #6366f1;
+    --indigo-soft: #eef2ff;
+    --indigo-border: #c7d2fe;
+    --emerald: #10b981;
+    --emerald-soft: #ecfdf5;
+    --amber: #f59e0b;
+    --amber-soft: #fffbeb;
+    --rose: #f43f5e;
+    --rose-soft: #fff1f2;
+    --gray-100: #f4f4f5;
+    --gray-200: #e4e4e7;
+    --gray-300: #d4d4d8;
+    --gray-700: #3f3f46;
+    --radius: 8px;
+    --radius-sm: 5px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--canvas);
+    color: var(--text-primary);
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .app-shell {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-logo {
+    padding: 18px 16px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .logo-mark {
+    width: 28px;
+    height: 28px;
+    background: var(--sidebar-accent);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-mark svg { width: 14px; height: 14px; }
+
+  .logo-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-top: 1px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .sidebar-section {
+    padding: 16px 10px 4px;
+  }
+
+  .sidebar-section-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0 8px;
+    margin-bottom: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--sidebar-text);
+    font-size: 13px;
+    font-weight: 400;
+    transition: background 0.12s, color 0.12s;
+    margin-bottom: 1px;
+    user-select: none;
+  }
+
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .nav-item.active { background: rgba(99,102,241,0.18); color: #fff; }
+  .nav-item.active .nav-dot { background: var(--sidebar-accent); }
+
+  .nav-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    flex-shrink: 0;
+    transition: background 0.12s;
+  }
+
+  .nav-badge {
+    margin-left: auto;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    background: rgba(99,102,241,0.3);
+    color: #a5b4fc;
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 12px 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .user-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .user-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .user-name { font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 500; }
+  .user-role { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 1px; }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .topbar-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .topbar-sep { color: var(--border); font-size: 16px; }
+
+  .topbar-sub {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-primary);
+    transition: background 0.12s, border-color 0.12s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .btn:hover { background: var(--gray-100); }
+
+  .btn-primary {
+    background: var(--indigo);
+    color: #fff;
+    border-color: var(--indigo);
+  }
+
+  .btn-primary:hover { background: #4f46e5; border-color: #4f46e5; }
+
+  .content-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  /* ── TABS ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── DASHBOARD ── */
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+  }
+
+  .metric-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .metric-value {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    font-family: 'DM Mono', monospace;
+    line-height: 1;
+  }
+
+  .metric-delta {
+    font-size: 11px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .delta-up { color: var(--emerald); }
+  .delta-down { color: var(--rose); }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .card-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-left: auto;
+  }
+
+  .card-body { padding: 18px; }
+
+  /* ── TASK SELECTOR ── */
+  .task-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 18px;
+  }
+
+  .task-card {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    background: var(--surface);
+  }
+
+  .task-card:hover { border-color: var(--indigo-border); box-shadow: 0 0 0 3px var(--indigo-soft); }
+  .task-card.selected { border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-soft); }
+
+  .task-difficulty {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 10px;
+  }
+
+  .diff-easy { background: var(--emerald-soft); color: #065f46; }
+  .diff-medium { background: var(--amber-soft); color: #78350f; }
+  .diff-hard { background: var(--rose-soft); color: #9f1239; }
+
+  .task-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+  }
+
+  .task-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .task-meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  .task-stat {
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .task-stat span {
+    font-weight: 500;
+    color: var(--text-primary);
+    display: block;
+  }
+
+  /* ── AGENT RUNNER ── */
+  .runner-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 16px;
+  }
+
+  .step-log {
+    background: #0e0f11;
+    border-radius: var(--radius);
+    padding: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: #a1a1aa;
+    min-height: 320px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .step-log-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--emerald);
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .log-title { color: #fff; font-size: 12px; }
+
+  .log-line {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeSlide 0.3s ease-out forwards;
+  }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .log-ts { color: rgba(255,255,255,0.2); min-width: 56px; }
+  .log-action { color: #a5b4fc; }
+  .log-result-ok { color: #6ee7b7; }
+  .log-result-warn { color: #fcd34d; }
+  .log-result-err { color: #fca5a5; }
+  .log-neutral { color: #71717a; }
+
+  .action-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .action-group-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+    margin-top: 4px;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-family: 'DM Mono', monospace;
+    transition: background 0.1s, border-color 0.1s;
+  }
+
+  .action-btn:hover { background: var(--indigo-soft); border-color: var(--indigo-border); }
+
+  .action-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .icon-blue { background: var(--indigo-soft); color: var(--indigo); }
+  .icon-amber { background: var(--amber-soft); color: #b45309; }
+  .icon-emerald { background: var(--emerald-soft); color: #047857; }
+  .icon-rose { background: var(--rose-soft); color: #be123c; }
+
+  .action-desc { font-size: 10px; color: var(--text-secondary); font-family: 'Plus Jakarta Sans', sans-serif; margin-top: 1px; }
+
+  .reward-bar-container { margin-top: 4px; }
+
+  .reward-breakdown {
+    margin-top: 12px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    background: #fcfcfb;
+    padding: 10px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-mono);
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+
+  .reward-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-bottom: 5px;
+  }
+
+  .reward-bar-label .val {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+
+  .reward-bar-track {
+    height: 6px;
+    background: var(--gray-100);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .reward-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.5s ease;
+  }
+
+  .fill-indigo { background: var(--indigo); }
+  .fill-emerald { background: var(--emerald); }
+  .fill-amber { background: var(--amber); }
+
+  /* ── DATA INSPECTION ── */
+  .data-table-wrap {
+    overflow-x: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  th {
+    background: var(--gray-100);
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: middle;
+  }
+
+  tr:hover td { background: var(--gray-100); }
+
+  .cell-null {
+    color: var(--rose);
+    font-style: italic;
+    opacity: 0.7;
+  }
+
+  .cell-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 100px;
+    font-weight: 500;
+  }
+
+  .flag-missing { background: var(--rose-soft); color: #be123c; }
+  .flag-dupe { background: var(--amber-soft); color: #92400e; }
+  .flag-type { background: var(--indigo-soft); color: #3730a3; }
+  .flag-outlier { background: #fdf4ff; color: #7e22ce; }
+  .flag-ok { background: var(--emerald-soft); color: #065f46; }
+
+  .col-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--gray-100);
+    color: var(--text-secondary);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── RISK / GOVERNANCE ── */
+  .risk-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .risk-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .risk-step-name {
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .risk-step-desc { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+
+  .risk-score-badge {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    flex-shrink: 0;
+  }
+
+  .risk-low { background: var(--emerald-soft); color: #065f46; }
+  .risk-med { background: var(--amber-soft); color: #78350f; }
+  .risk-high { background: var(--rose-soft); color: #9f1239; }
+
+  .audit-gate {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: var(--emerald-soft);
+    border: 1px solid #a7f3d0;
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+  }
+
+  .audit-gate-fail {
+    background: var(--rose-soft);
+    border-color: #fecdd3;
+  }
+
+  .gate-label { font-size: 12px; font-weight: 600; color: #064e3b; }
+  .gate-label-fail { color: #881337; }
+  .gate-desc { font-size: 11px; color: #065f46; margin-top: 2px; }
+  .gate-desc-fail { color: #9f1239; }
+
+  .gate-status {
+    font-size: 11px;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+    padding: 4px 12px;
+    border-radius: 100px;
+    background: rgba(16,185,129,0.15);
+    color: #047857;
+  }
+
+  .gate-status-fail { background: rgba(244,63,94,0.12); color: #be123c; }
+
+  /* ── LEADERBOARD ── */
+  .lb-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--border-soft);
+    transition: background 0.1s;
+  }
+
+  .lb-row:hover { background: var(--gray-100); }
+
+  .lb-rank {
+    width: 24px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-secondary);
+    text-align: right;
+  }
+
+  .lb-rank-1 { color: #ca8a04; font-weight: 600; }
+  .lb-rank-2 { color: #71717a; font-weight: 600; }
+  .lb-rank-3 { color: #b45309; font-weight: 600; }
+
+  .lb-agent {
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+    min-width: 140px;
+  }
+
+  .lb-policy {
+    font-size: 11px;
+    color: var(--text-secondary);
+    flex: 1;
+  }
+
+  .lb-score {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-primary);
+    min-width: 50px;
+    text-align: right;
+  }
+
+  .lb-bar-track {
+    width: 80px;
+    height: 4px;
+    background: var(--gray-200);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .lb-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: var(--indigo);
+  }
+
+  .lb-verdict {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+    min-width: 68px;
+    text-align: center;
+  }
+
+  .verdict-pass { background: var(--emerald-soft); color: #065f46; }
+  .verdict-review { background: var(--amber-soft); color: #78350f; }
+  .verdict-fail { background: var(--rose-soft); color: #9f1239; }
+
+  /* ── SCORE SUMMARY ── */
+  .score-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .score-section {
+    background: var(--gray-100);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+  }
+
+  .score-section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .score-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    margin-bottom: 7px;
+  }
+
+  .score-item-label { color: var(--text-secondary); }
+  .score-item-val { font-family: 'DM Mono', monospace; font-weight: 500; }
+
+  /* ── DIVIDER ── */
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: var(--gray-100);
+    color: var(--text-secondary);
+    font-weight: 500;
+    border: 1px solid var(--border);
+  }
+
+  /* observation box */
+  .obs-box {
+    background: #0e0f11;
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #a1a1aa;
+    line-height: 1.7;
+  }
+
+  .obs-key { color: #a5b4fc; }
+  .obs-val { color: #6ee7b7; }
+  .obs-num { color: #fcd34d; }
+  .obs-null { color: #fca5a5; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 10px; }
+
+  /* ── Progress Bar for scores ── */
+  .prog-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .prog-label { font-size: 11px; color: var(--text-secondary); min-width: 110px; }
+  .prog-track { flex: 1; height: 5px; background: var(--gray-100); border-radius: 100px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 100px; }
+  .prog-val { font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 500; min-width: 36px; text-align: right; }
+
+  /* ── LEVEL BRIEFING MODAL ── */
+  .level-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 10, 14, 0.58);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    z-index: 2000;
+  }
+
+  .level-modal-backdrop.open { display: flex; }
+
+  .level-modal {
+    width: min(760px, 100%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+
+  .level-modal-head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .level-modal-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .level-modal-body { padding: 16px 18px; }
+
+  .level-brief-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .level-brief-box {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--gray-100);
+    padding: 12px;
+  }
+
+  .level-brief-label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 6px;
+  }
+
+  .level-brief-text {
+    font-size: 12px;
+    color: var(--text-primary);
+    line-height: 1.65;
+  }
+
+  .level-modal-actions {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  @media (max-width: 780px) {
+    .level-brief-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="5" height="5" rx="1.5" fill="white" opacity="0.9"/>
+          <rect x="8" y="1" width="5" height="5" rx="1.5" fill="white" opacity="0.6"/>
+          <rect x="1" y="8" width="5" height="5" rx="1.5" fill="white" opacity="0.6"/>
+          <rect x="8" y="8" width="5" height="5" rx="1.5" fill="white" opacity="0.3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-text">DataQA Bench</div>
+        <div class="logo-sub">v1.0 · Evaluation</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Workspace</div>
+      <div class="nav-item active" onclick="showScreen('runner')">
+        <div class="nav-dot"></div>Agent Runner
+        <span class="nav-badge">live</span>
+      </div>
+      <div class="nav-item" onclick="showScreen('dashboard')">
+        <div class="nav-dot"></div>Overview
+      </div>
+      <div class="nav-item" onclick="showScreen('dataset')">
+        <div class="nav-dot"></div>Dataset Inspector
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Evaluation</div>
+      <div class="nav-item" onclick="showScreen('governance')">
+        <div class="nav-dot"></div>Governance
+      </div>
+      <div class="nav-item" onclick="showScreen('leaderboard')">
+        <div class="nav-dot"></div>Leaderboard
+      </div>
+      <div class="nav-item" onclick="showScreen('report')">
+        <div class="nav-dot"></div>Audit Report
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Config</div>
+      <div class="nav-item" onclick="showScreen('api-settings')"><div class="nav-dot"></div>API Settings</div>
+      <div class="nav-item" onclick="showScreen('task-library')"><div class="nav-dot"></div>Task Library</div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="user-row">
+        <div class="user-avatar">RS</div>
+        <div>
+          <div class="user-name">R. Sharma</div>
+          <div class="user-role">ML Researcher</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div id="topbar-title" class="topbar-title">Agent Runner</div>
+      <span class="topbar-sep">/</span>
+      <div id="topbar-sub" class="topbar-sub">easy_missing_and_dupes · Step 0 of 40</div>
+      <div class="topbar-actions">
+        <span class="tag" id="active-level-tag" style="background:var(--emerald-soft);border-color:#a7f3d0;color:#065f46">● Easy</span>
+        <span class="tag" id="active-task-tag">● easy_missing_and_dupes</span>
+        <button class="btn" id="btn-new-run" onclick="openLevelBriefing(SESSION.selectedTask)">New Run</button>
+        <button class="btn" id="btn-run-plan" onclick="runSuggestedPlan()">Run Suggested Plan</button>
+        <button class="btn btn-primary" id="btn-export-report" onclick="downloadRunReport()">Export Report</button>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- ── DASHBOARD SCREEN ── -->
+      <div id="screen-dashboard" class="screen">
+
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="metric-label">Total Runs</div>
+            <div class="metric-value" id="kpi-total-runs">0</div>
+            <div class="metric-delta delta-up" id="kpi-total-runs-delta">Session</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Avg Quality Score</div>
+            <div class="metric-value" style="color:var(--emerald)" id="kpi-avg-quality">0.000</div>
+            <div class="metric-delta delta-up" id="kpi-avg-quality-delta">live</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Auto-Approved</div>
+            <div class="metric-value" id="kpi-auto-approved">0.0%</div>
+            <div class="metric-delta" style="color:var(--text-secondary)">CI gate threshold: default</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Avg Risk Score</div>
+            <div class="metric-value" style="color:var(--amber)" id="kpi-avg-risk">0.00</div>
+            <div class="metric-delta delta-up" id="kpi-avg-risk-delta">live</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Task Difficulty Distribution</div>
+                <div class="card-sub">1,284 runs</div>
+              </div>
+              <div class="card-body">
+                <div class="prog-row">
+                  <div class="prog-label">Easy (missing + dupes)</div>
+                  <div class="prog-track"><div class="prog-fill fill-emerald" style="width:45%"></div></div>
+                  <div class="prog-val" style="color:var(--emerald)">45%</div>
+                </div>
+                <div class="prog-row">
+                  <div class="prog-label">Medium (type + category)</div>
+                  <div class="prog-track"><div class="prog-fill fill-indigo" style="width:34%"></div></div>
+                  <div class="prog-val" style="color:var(--indigo)">34%</div>
+                </div>
+                <div class="prog-row">
+                  <div class="prog-label">Hard (conflicts + budget)</div>
+                  <div class="prog-track"><div class="prog-fill fill-amber" style="width:21%"></div></div>
+                  <div class="prog-val" style="color:var(--amber)">21%</div>
+                </div>
+
+                <div style="margin-top:18px">
+                  <div class="prog-row">
+                    <div class="prog-label">Quality score ≥ 0.80</div>
+                    <div class="prog-track"><div class="prog-fill fill-emerald" style="width:68%"></div></div>
+                    <div class="prog-val" style="color:var(--emerald)">68%</div>
+                  </div>
+                  <div class="prog-row">
+                    <div class="prog-label">Steps within budget</div>
+                    <div class="prog-track"><div class="prog-fill fill-indigo" style="width:81%"></div></div>
+                    <div class="prog-val" style="color:var(--indigo)">81%</div>
+                  </div>
+                  <div class="prog-row">
+                    <div class="prog-label">Deduplication accuracy</div>
+                    <div class="prog-track"><div class="prog-fill fill-indigo" style="width:93%"></div></div>
+                    <div class="prog-val" style="color:var(--indigo)">93%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div class="card-title">Recent Runs</div></div>
+              <div style="padding: 0 0 4px" id="recent-runs-list">
+                <div class="lb-row">
+                  <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-secondary);min-width:72px">run_0001</div>
+                  <div style="flex:1;font-size:12px;font-weight:500">No runs yet</div>
+                  <div class="lb-verdict verdict-review">WAITING</div>
+                  <div class="lb-score">0.000</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Select Task to Run</div></div>
+              <div class="task-grid" style="grid-template-columns:1fr;gap:10px;padding:16px">
+                <div class="task-card selected" data-task-id="easy_missing_and_dupes" onclick="selectTask(this)">
+                  <div class="task-difficulty diff-easy">● Easy</div>
+                  <div class="task-name">Missing Values & Duplicates</div>
+                  <div class="task-desc">Clean NaN entries across 3 columns, identify and remove duplicate rows with matching customer IDs.</div>
+                  <div class="task-meta">
+                    <div class="task-stat"><span>500</span>rows</div>
+                    <div class="task-stat"><span>12</span>defects</div>
+                    <div class="task-stat"><span>40</span>step budget</div>
+                  </div>
+                </div>
+                <div class="task-card" data-task-id="medium_type_and_category" onclick="selectTask(this)">
+                  <div class="task-difficulty diff-medium">◆ Medium</div>
+                  <div class="task-name">Type Errors & Category Drift</div>
+                  <div class="task-desc">Cast mistyped numeric fields, resolve inconsistent category labels (e.g. "NY" vs "New York").</div>
+                  <div class="task-meta">
+                    <div class="task-stat"><span>1.2k</span>rows</div>
+                    <div class="task-stat"><span>28</span>defects</div>
+                    <div class="task-stat"><span>60</span>step budget</div>
+                  </div>
+                </div>
+                <div class="task-card" data-task-id="hard_conflicts_and_budget" onclick="selectTask(this)">
+                  <div class="task-difficulty diff-hard">■ Hard</div>
+                  <div class="task-name">Conflicts & Budget Constraints</div>
+                  <div class="task-desc">Resolve field-level conflicts across merged sources, handle outliers within strict step budget.</div>
+                  <div class="task-meta">
+                    <div class="task-stat"><span>3k</span>rows</div>
+                    <div class="task-stat"><span>54</span>defects</div>
+                    <div class="task-stat"><span>80</span>step budget</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AGENT RUNNER ── -->
+      <div id="screen-runner" class="screen active">
+        <div class="runner-layout">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header">
+                <div class="card-title">Environment Observation</div>
+                <span class="tag" id="runner-level-badge" style="margin-left:8px;background:var(--emerald-soft);border-color:#a7f3d0;color:#065f46">Level: Easy</span>
+                <select id="runner-level-select" class="btn" style="margin-left:8px;padding:4px 10px;height:28px" onchange="setTaskById(this.value)">
+                  <option value="easy_missing_and_dupes">Easy - Missing Values & Duplicates</option>
+                  <option value="medium_type_and_category">Medium - Type Errors & Category Drift</option>
+                  <option value="hard_conflicts_and_budget">Hard - Conflicts & Budget Constraints</option>
+                </select>
+                <span class="tag" id="runner-step-budget">Step 0 / 0</span>
+                <span class="tag" id="runner-status-tag" style="margin-left:4px;background:var(--emerald-soft);border-color:#a7f3d0;color:#065f46">● Ready</span>
+              </div>
+              <div class="card-body" style="padding:14px">
+                <div class="obs-box" id="runner-observation-box">
+<span class="obs-key">"status"</span>: <span class="obs-val">"running"</span>,<br>
+<span class="obs-key">"step"</span>: <span class="obs-num">7</span>,<br>
+<span class="obs-key">"rows_remaining"</span>: <span class="obs-num">2847</span>,<br>
+<span class="obs-key">"issues_found"</span>: {<br>
+&nbsp;&nbsp;<span class="obs-key">"missing_values"</span>: <span class="obs-num">34</span>,<br>
+&nbsp;&nbsp;<span class="obs-key">"duplicates"</span>: <span class="obs-num">12</span>,<br>
+&nbsp;&nbsp;<span class="obs-key">"type_errors"</span>: <span class="obs-num">8</span>,<br>
+&nbsp;&nbsp;<span class="obs-key">"outliers"</span>: <span class="obs-num">5</span><br>
+},<br>
+<span class="obs-key">"reward"</span>: <span class="obs-num">0.412</span>,<br>
+<span class="obs-key">"budget_used"</span>: <span class="obs-num">7</span> / <span class="obs-num">80</span>,<br>
+<span class="obs-key">"risk_flag"</span>: <span class="obs-null">null</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Step Log</div>
+                <div class="live-dot" style="margin-left:auto"></div>
+                <div style="font-size:11px;color:var(--text-secondary);margin-left:6px">Live</div>
+              </div>
+              <div class="card-body" style="padding:0">
+                <div class="step-log" id="runner-step-log">
+                  <div class="log-line" style="animation-delay:0s">
+                    <span class="log-ts">00:00.12</span>
+                    <span class="log-action">reset()</span>
+                    <span class="log-neutral">→ env initialized, task: hard_conflicts</span>
+                  </div>
+                  <div class="log-line" style="animation-delay:0.1s">
+                    <span class="log-ts">00:01.04</span>
+                    <span class="log-action">inspect_column("revenue")</span>
+                    <span class="log-result-ok">→ 34 nulls detected</span>
+                  </div>
+                  <div class="log-line" style="animation-delay:0.2s">
+                    <span class="log-ts">00:01.88</span>
+                    <span class="log-action">clean_missing("revenue", strategy="median")</span>
+                    <span class="log-result-ok">→ 34 rows imputed, reward +0.08</span>
+                  </div>
+                  <div class="log-line" style="animation-delay:0.3s">
+                    <span class="log-ts">00:02.55</span>
+                    <span class="log-action">deduplicate(key="customer_id")</span>
+                    <span class="log-result-ok">→ 12 dupes removed, reward +0.06</span>
+                  </div>
+                  <div class="log-line" style="animation-delay:0.4s">
+                    <span class="log-ts">00:03.20</span>
+                    <span class="log-action">cast_type("order_date", target="datetime")</span>
+                    <span class="log-result-warn">⚠ 3 unparseable values — flagged</span>
+                  </div>
+                  <div class="log-line" style="animation-delay:0.5s">
+                    <span class="log-ts">00:04.01</span>
+                    <span class="log-action">resolve_conflict("region", source_priority=[A,B])</span>
+                    <span class="log-result-ok">→ 18 conflicts resolved, reward +0.11</span>
+                  </div>
+                  <div class="log-line" style="animation-delay:0.6s">
+                    <span class="log-ts">00:05.74</span>
+                    <span class="log-action">flag_outliers("amount", method="iqr")</span>
+                    <span class="log-result-warn">⚠ 5 outliers flagged for review</span>
+                  </div>
+                  <div class="log-line" style="animation-delay:0.7s">
+                    <span class="log-ts">00:06.90</span>
+                    <span class="log-action">inspect_column("category")</span>
+                    <span class="log-neutral">→ 4 inconsistent labels found</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Panel -->
+          <div class="action-panel">
+            <div class="card">
+              <div class="card-header"><div class="card-title">Available Actions</div></div>
+              <div class="card-body" style="padding:14px">
+                <div class="action-group-label" style="margin-bottom:8px">Cleaning</div>
+                <div class="action-btn" data-action="clean_missing" style="margin-bottom:6px" onclick="runAction('clean_missing', ['amount'])">
+                  <div class="action-icon icon-blue">◎</div>
+                  <div>
+                    <div>clean_missing()</div>
+                    <div class="action-desc">Impute or drop null values</div>
+                  </div>
+                </div>
+                <div class="action-btn" data-action="deduplicate" style="margin-bottom:6px" onclick="runAction('deduplicate')">
+                  <div class="action-icon icon-amber">⧉</div>
+                  <div>
+                    <div>deduplicate()</div>
+                    <div class="action-desc">Remove duplicate rows by key</div>
+                  </div>
+                </div>
+                <div class="action-btn" data-action="cast_type" style="margin-bottom:14px" onclick="runAction('cast_type', ['amount'])">
+                  <div class="action-icon icon-blue">⊞</div>
+                  <div>
+                    <div>cast_type()</div>
+                    <div class="action-desc">Convert column to target dtype</div>
+                  </div>
+                </div>
+
+                <div class="action-group-label" style="margin-bottom:8px">Validation</div>
+                <div class="action-btn" data-action="validate_constraints" style="margin-bottom:6px" onclick="runAction('validate_constraints')">
+                  <div class="action-icon icon-emerald">✓</div>
+                  <div>
+                    <div>validate_constraints()</div>
+                    <div class="action-desc">Check all columns against spec</div>
+                  </div>
+                </div>
+                <div class="action-btn" data-action="cap_outliers" style="margin-bottom:6px" onclick="runAction('cap_outliers', ['amount'])">
+                  <div class="action-icon icon-amber">△</div>
+                  <div>
+                    <div>cap_outliers()</div>
+                    <div class="action-desc">IQR / z-score detection</div>
+                  </div>
+                </div>
+                <div class="action-btn" data-action="normalize_categories" style="margin-bottom:14px" onclick="runAction('normalize_categories', ['region'])">
+                  <div class="action-icon icon-blue">⇄</div>
+                  <div>
+                    <div>normalize_categories()</div>
+                    <div class="action-desc">Merge conflicting source fields</div>
+                  </div>
+                </div>
+
+                <div class="action-group-label" style="margin-bottom:8px">Submission</div>
+                <div class="action-btn" data-action="submit" style="background:var(--indigo-soft);border-color:var(--indigo-border)" onclick="runAction('submit')">
+                  <div class="action-icon" style="background:var(--indigo);color:#fff">→</div>
+                  <div>
+                    <div style="color:var(--indigo)">submit()</div>
+                    <div class="action-desc">Finalize and grade result</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div class="card-title">Live Reward Tracker</div></div>
+              <div class="card-body" style="padding:14px">
+                <div class="reward-bar-container" style="margin-bottom:12px">
+                  <div class="reward-bar-label">
+                    <span style="color:var(--text-secondary)">Quality</span>
+                    <span class="val" style="color:var(--emerald)" id="reward-quality-val">0.000</span>
+                  </div>
+                  <div class="reward-bar-track">
+                    <div class="reward-bar-fill fill-emerald" id="reward-quality-bar" style="width:0%"></div>
+                  </div>
+                </div>
+                <div class="reward-bar-container" style="margin-bottom:12px">
+                  <div class="reward-bar-label">
+                    <span style="color:var(--text-secondary)">Efficiency</span>
+                    <span class="val" style="color:var(--indigo)" id="reward-efficiency-val">0/0 steps</span>
+                  </div>
+                  <div class="reward-bar-track">
+                    <div class="reward-bar-fill fill-indigo" id="reward-efficiency-bar" style="width:0%"></div>
+                  </div>
+                </div>
+                <div class="reward-bar-container">
+                  <div class="reward-bar-label">
+                    <span style="color:var(--text-secondary)">Risk Score</span>
+                    <span class="val" style="color:var(--amber)" id="reward-risk-val">0.00</span>
+                  </div>
+                  <div class="reward-bar-track">
+                    <div class="reward-bar-fill fill-amber" id="reward-risk-bar" style="width:0%"></div>
+                  </div>
+                </div>
+                <div class="reward-breakdown" id="reward-breakdown">step reward trace will appear here</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DATASET INSPECTOR ── -->
+      <div id="screen-dataset" class="screen">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Dataset Preview</div>
+            <span class="tag">3,000 rows · 8 columns</span>
+            <span class="tag" style="margin-left:4px;background:var(--rose-soft);border-color:#fecdd3;color:#be123c">54 defects</span>
+            <div class="card-sub">hard_conflicts_and_budget.json</div>
+          </div>
+          <div class="data-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>customer_id <span class="col-chip">str</span></th>
+                  <th>order_date <span class="col-chip">datetime</span></th>
+                  <th>region <span class="col-chip">str</span></th>
+                  <th>category <span class="col-chip">str</span></th>
+                  <th>amount <span class="col-chip">float</span></th>
+                  <th>revenue <span class="col-chip">float</span></th>
+                  <th>status <span class="col-chip">flags</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color:var(--text-secondary)">1</td>
+                  <td>CUST_0041</td>
+                  <td>2024-03-12</td>
+                  <td>New York</td>
+                  <td>Electronics</td>
+                  <td>1,240.00</td>
+                  <td>890.50</td>
+                  <td><span class="cell-flag flag-ok">✓ clean</span></td>
+                </tr>
+                <tr>
+                  <td style="color:var(--text-secondary)">2</td>
+                  <td>CUST_0041</td>
+                  <td>2024-03-12</td>
+                  <td>NY</td>
+                  <td>Electronics</td>
+                  <td>1,240.00</td>
+                  <td>890.50</td>
+                  <td><span class="cell-flag flag-dupe">⧉ duplicate</span></td>
+                </tr>
+                <tr>
+                  <td style="color:var(--text-secondary)">3</td>
+                  <td>CUST_0089</td>
+                  <td class="cell-null">n/a</td>
+                  <td>California</td>
+                  <td>Apparel</td>
+                  <td>320.00</td>
+                  <td class="cell-null">NaN</td>
+                  <td><span class="cell-flag flag-missing">○ missing</span></td>
+                </tr>
+                <tr>
+                  <td style="color:var(--text-secondary)">4</td>
+                  <td>CUST_0112</td>
+                  <td>2024-01-28</td>
+                  <td>Texas</td>
+                  <td>electronics</td>
+                  <td>98,400.00</td>
+                  <td>72,100.00</td>
+                  <td><span class="cell-flag flag-outlier">△ outlier</span></td>
+                </tr>
+                <tr>
+                  <td style="color:var(--text-secondary)">5</td>
+                  <td>CUST_0204</td>
+                  <td>not-a-date</td>
+                  <td>Florida</td>
+                  <td>Home Goods</td>
+                  <td>540.00</td>
+                  <td>310.00</td>
+                  <td><span class="cell-flag flag-type">⊞ type error</span></td>
+                </tr>
+                <tr>
+                  <td style="color:var(--text-secondary)">6</td>
+                  <td>CUST_0310</td>
+                  <td>2024-02-14</td>
+                  <td>Cali</td>
+                  <td>Home Goods</td>
+                  <td>780.00</td>
+                  <td>490.00</td>
+                  <td><span class="cell-flag flag-type">⊞ category</span></td>
+                </tr>
+                <tr>
+                  <td style="color:var(--text-secondary)">7</td>
+                  <td>CUST_0391</td>
+                  <td>2024-02-19</td>
+                  <td>New York</td>
+                  <td>Electronics</td>
+                  <td>2,100.00</td>
+                  <td>1,450.00</td>
+                  <td><span class="cell-flag flag-ok">✓ clean</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px">
+          <div class="metric-card">
+            <div class="metric-label">Missing Values</div>
+            <div class="metric-value" style="color:var(--rose)">34</div>
+            <div class="metric-delta" style="color:var(--text-secondary)">across 3 columns</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Duplicates</div>
+            <div class="metric-value" style="color:var(--amber)">12</div>
+            <div class="metric-delta" style="color:var(--text-secondary)">by customer_id key</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Type Errors</div>
+            <div class="metric-value" style="color:var(--indigo)">8</div>
+            <div class="metric-delta" style="color:var(--text-secondary)">order_date, category</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Outliers</div>
+            <div class="metric-value" style="color:#7c3aed">5</div>
+            <div class="metric-delta" style="color:var(--text-secondary)">IQR method, amount</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── GOVERNANCE ── -->
+      <div id="screen-governance" class="screen">
+        <div class="two-col">
+          <div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Per-Step Risk Scores</div><div class="card-sub">run_1284 · gpt-4o</div></div>
+              <div class="card-body" id="governance-risk-list">
+                <div class="risk-row" style="border-bottom:none">
+                  <div class="risk-step-num">00</div>
+                  <div>
+                    <div class="risk-step-name">No steps yet</div>
+                    <div class="risk-step-desc">Run actions to populate governance trace</div>
+                  </div>
+                  <div class="risk-score-badge risk-low">0 low</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header"><div class="card-title">CI Gate Status</div></div>
+              <div class="card-body" id="governance-ci-gates">
+                <div class="audit-gate" style="margin-bottom:0">
+                  <div>
+                    <div class="gate-label">Waiting for evaluation</div>
+                    <div class="gate-desc">Run and evaluate an episode to see CI gates.</div>
+                  </div>
+                  <div class="gate-status">PENDING</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div class="card-title">Risk Flags & Recommendations</div></div>
+              <div class="card-body" id="governance-flags-list">
+                <div style="display:flex;gap:10px;align-items:flex-start">
+                  <div style="width:28px;height:28px;border-radius:6px;background:var(--indigo-soft);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--indigo);flex-shrink:0">i</div>
+                  <div>
+                    <div style="font-size:12px;font-weight:600;margin-bottom:3px">No governance flags yet</div>
+                    <div style="font-size:11px;color:var(--text-secondary);line-height:1.5">Execute actions to populate recommendations.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LEADERBOARD ── -->
+      <div id="screen-leaderboard" class="screen">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Evaluation Leaderboard</div>
+            <span class="tag" style="margin-left:auto">Hard task · 1,284 runs</span>
+          </div>
+          <div style="padding: 0 0 4px" id="leaderboard-list">
+            <div style="display:flex;gap:12px;padding:10px 18px;background:var(--gray-100);font-size:10px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;font-family:'DM Mono',monospace;border-bottom:1px solid var(--border)">
+              <div style="min-width:24px">#</div>
+              <div style="min-width:140px">Agent</div>
+              <div style="flex:1">Policy</div>
+              <div style="min-width:80px">Score bar</div>
+              <div style="min-width:50px;text-align:right">Score</div>
+              <div style="min-width:68px;text-align:center">Verdict</div>
+            </div>
+            <div class="lb-row">
+              <div class="lb-rank">1</div>
+              <div class="lb-agent">session-agent</div>
+              <div class="lb-policy">No evaluated runs yet</div>
+              <div><div class="lb-bar-track"><div class="lb-bar-fill" style="width:0%"></div></div></div>
+              <div class="lb-score">0.000</div>
+              <div class="lb-verdict verdict-review">WAITING</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AUDIT REPORT ── -->
+      <div id="screen-report" class="screen">
+        <div class="two-col">
+          <div>
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Evaluation Payload</div>
+                <span class="tag" style="margin-left:auto">run_1284 · gpt-4o</span>
+              </div>
+              <div class="card-body">
+                <div class="score-grid">
+                  <div class="score-section">
+                    <div class="score-section-label">Quality Scores</div>
+                    <div class="score-item"><span class="score-item-label">Missing handled</span><span class="score-item-val" style="color:var(--emerald)">1.00</span></div>
+                    <div class="score-item"><span class="score-item-label">Duplicates removed</span><span class="score-item-val" style="color:var(--emerald)">1.00</span></div>
+                    <div class="score-item"><span class="score-item-label">Type accuracy</span><span class="score-item-val" style="color:var(--amber)">0.82</span></div>
+                    <div class="score-item"><span class="score-item-label">Category consistency</span><span class="score-item-val" style="color:var(--emerald)">0.94</span></div>
+                    <div class="score-item"><span class="score-item-label">Conflict resolution</span><span class="score-item-val">0.91</span></div>
+                  </div>
+                  <div class="score-section">
+                    <div class="score-section-label">Efficiency</div>
+                    <div class="score-item"><span class="score-item-label">Steps used</span><span class="score-item-val">7 / 80</span></div>
+                    <div class="score-item"><span class="score-item-label">Budget utilization</span><span class="score-item-val" style="color:var(--emerald)">8.7%</span></div>
+                    <div class="score-item"><span class="score-item-label">Redundant actions</span><span class="score-item-val" style="color:var(--emerald)">0</span></div>
+                    <div class="score-item"><span class="score-item-label">Avg risk / step</span><span class="score-item-val" style="color:var(--amber)">0.31</span></div>
+                    <div class="score-item"><span class="score-item-label">High-risk steps</span><span class="score-item-val" style="color:var(--rose)">1</span></div>
+                  </div>
+                </div>
+
+                <div style="background:var(--gray-100);border-radius:var(--radius-sm);padding:14px;margin-top:4px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                    <div style="font-size:13px;font-weight:600">Final Score</div>
+                    <div id="report-final-score" style="font-size:22px;font-weight:600;font-family:'DM Mono',monospace;color:var(--emerald)">0.000</div>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary)">
+                    <span>CI gate threshold: 0.75</span>
+                    <span id="report-verdict" style="color:var(--indigo);font-weight:500">● Waiting</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Full Run Audit</div></div>
+              <div class="card-body">
+                <div style="font-size:11px;color:var(--text-secondary);margin-bottom:12px;line-height:1.6">
+                  Complete step-by-step trace with timestamps, actions, observations, and risk scores. Suitable for compliance review and policy debugging.
+                </div>
+                <div class="obs-box" id="audit-json-trace" style="font-size:11px;line-height:1.8">
+<span class="obs-key">"run_id"</span>: <span class="obs-val">"run_1284"</span>,<br>
+<span class="obs-key">"agent"</span>: <span class="obs-val">"gpt-4o-0613"</span>,<br>
+<span class="obs-key">"task"</span>: <span class="obs-val">"hard_conflicts_and_budget"</span>,<br>
+<span class="obs-key">"total_steps"</span>: <span class="obs-num">7</span>,<br>
+<span class="obs-key">"final_score"</span>: <span class="obs-num">0.891</span>,<br>
+<span class="obs-key">"verdict"</span>: <span class="obs-val">"AUTO_APPROVED"</span>,<br>
+<span class="obs-key">"risk_flags"</span>: [<span class="obs-val">"step_7_high_risk_drop"</span>],<br>
+<span class="obs-key">"gate_results"</span>: {<br>
+&nbsp;&nbsp;<span class="obs-key">"quality"</span>: <span class="obs-val">"PASS"</span>,<br>
+&nbsp;&nbsp;<span class="obs-key">"budget"</span>: <span class="obs-val">"PASS"</span>,<br>
+&nbsp;&nbsp;<span class="obs-key">"max_risk"</span>: <span class="obs-null">"FLAG"</span><br>
+}
+                </div>
+                <div style="margin-top:12px;display:flex;gap:8px">
+                  <button class="btn" style="font-size:11px;padding:5px 12px" onclick="downloadRunReport()">Download JSON</button>
+                  <button class="btn btn-primary" style="font-size:11px;padding:5px 12px" onclick="exportPdf()">Export PDF</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── API SETTINGS ── -->
+      <div id="screen-api-settings" class="screen">
+        <div class="two-col">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header">
+                <div class="card-title">Connection & Runtime</div>
+                <span class="tag" id="api-health-tag" style="margin-left:auto">● unknown</span>
+              </div>
+              <div class="card-body" style="padding:14px">
+                <div class="score-item"><span class="score-item-label">Base URL</span><span class="score-item-val" id="api-base-url" style="font-family:'DM Mono',monospace">/</span></div>
+                <div class="score-item"><span class="score-item-label">Selected Task</span><span class="score-item-val" id="api-selected-task">easy_missing_and_dupes</span></div>
+                <div class="score-item"><span class="score-item-label">Step Budget</span><span class="score-item-val" id="api-step-budget">0</span></div>
+                <div class="score-item"><span class="score-item-label">Steps Used</span><span class="score-item-val" id="api-steps-used">0</span></div>
+                <div class="score-item"><span class="score-item-label">Validation Passed</span><span class="score-item-val" id="api-validation-status">false</span></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div class="card-title">API Endpoints</div></div>
+              <div class="card-body" style="padding:14px">
+                <div class="obs-box" style="font-size:11px;line-height:1.8" id="api-endpoints-list">Loading endpoint map...</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header"><div class="card-title">Quick Actions</div></div>
+              <div class="card-body" style="padding:14px;display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn" onclick="startNewRun()">Reset Current Task</button>
+                <button class="btn" onclick="showScreen('runner')">Open Runner</button>
+                <button class="btn btn-primary" onclick="downloadRunReport()">Export Current JSON</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div class="card-title">Configuration Notes</div></div>
+              <div class="card-body" style="padding:14px">
+                <div style="font-size:12px;color:var(--text-secondary);line-height:1.7">
+                  This environment uses deterministic tasks and fixed evaluator thresholds by default. Use <span style="font-family:'DM Mono',monospace">/evaluate</span> with custom threshold payloads for stricter CI policies.
+                </div>
+                <div style="margin-top:12px;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--gray-100)">
+                  <div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px">Current CI decision</div>
+                  <div id="api-last-decision" style="font-size:13px;font-weight:600">WAITING</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TASK LIBRARY ── -->
+      <div id="screen-task-library" class="screen">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <div class="card-title">Task Library</div>
+            <span class="tag" id="task-library-count" style="margin-left:auto">3 tasks</span>
+          </div>
+          <div class="card-body" id="task-library-list" style="padding:14px">
+            <div class="risk-row" style="border-bottom:none">
+              <div class="risk-step-num">01</div>
+              <div>
+                <div class="risk-step-name">Loading tasks...</div>
+                <div class="risk-step-desc">Preparing task catalog</div>
+              </div>
+              <div class="risk-score-badge risk-low">ready</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="metric-card">
+            <div class="metric-label">Active Task</div>
+            <div class="metric-value" id="task-library-active" style="font-size:16px">easy_missing_and_dupes</div>
+            <div class="metric-delta" style="color:var(--text-secondary)">Used by next reset/run</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Recommended Workflow</div>
+            <div class="metric-value" style="font-size:16px;color:var(--indigo)">inspect → clean → validate → submit</div>
+            <div class="metric-delta" style="color:var(--text-secondary)">Keeps risk and invalid actions low</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="level-briefing-backdrop" class="level-modal-backdrop" onclick="closeLevelBriefing()">
+  <div class="level-modal" onclick="event.stopPropagation()">
+    <div class="level-modal-head">
+      <div class="level-modal-title" id="level-brief-title">Before You Start This Level</div>
+      <span class="tag" id="level-brief-level-tag" style="margin-left:auto;background:var(--emerald-soft);border-color:#a7f3d0;color:#065f46">● Easy</span>
+    </div>
+    <div class="level-modal-body">
+      <div class="level-brief-grid">
+        <div class="level-brief-box">
+          <div class="level-brief-label">Level Objective</div>
+          <div class="level-brief-text" id="level-brief-objective">-</div>
+        </div>
+        <div class="level-brief-box">
+          <div class="level-brief-label">How To Work This Level</div>
+          <div class="level-brief-text" id="level-brief-workflow">-</div>
+        </div>
+        <div class="level-brief-box">
+          <div class="level-brief-label">Recommended First Actions</div>
+          <div class="level-brief-text" id="level-brief-actions">-</div>
+        </div>
+        <div class="level-brief-box">
+          <div class="level-brief-label">Success Criteria + Cautions</div>
+          <div class="level-brief-text" id="level-brief-cautions">-</div>
+        </div>
+      </div>
+    </div>
+    <div class="level-modal-actions">
+      <button class="btn" onclick="closeLevelBriefing()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmLevelBriefingStart()">Start Level</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const TASK_META = {
+    easy_missing_and_dupes: {
+      level: "Easy",
+      icon: "●",
+      color: "#065f46",
+      bg: "var(--emerald-soft)",
+      border: "#a7f3d0",
+      budget: 40,
+      label: "Missing Values & Duplicates",
+      objective: "Clean null entries and remove duplicate records while preserving valid rows.",
+      workflow: "Inspect schema, clean missing values, deduplicate with stable keys, then validate before submit.",
+      actions: ["inspect_schema", "clean_missing", "deduplicate", "validate_constraints"],
+      cautions: "Avoid over-cleaning low-risk columns. Submit only after validation passes.",
+    },
+    medium_type_and_category: {
+      level: "Medium",
+      icon: "◆",
+      color: "#92400e",
+      bg: "var(--amber-soft)",
+      border: "#fcd34d",
+      budget: 60,
+      label: "Type Errors & Category Drift",
+      objective: "Fix type mismatches and normalize inconsistent category values.",
+      workflow: "Profile affected columns, cast types safely, normalize categories, validate constraints, then submit.",
+      actions: ["inspect_schema", "cast_type", "normalize_categories", "validate_constraints"],
+      cautions: "Prevent destructive casting and keep category mappings consistent.",
+    },
+    hard_conflicts_and_budget: {
+      level: "Hard",
+      icon: "■",
+      color: "#be123c",
+      bg: "var(--rose-soft)",
+      border: "#fecdd3",
+      budget: 80,
+      label: "Conflicts & Budget Constraints",
+      objective: "Resolve source conflicts and outliers under a strict step budget.",
+      workflow: "Prioritize high-impact columns, normalize conflicts, cap outliers, validate frequently, then submit.",
+      actions: ["inspect_schema", "normalize_categories", "cap_outliers", "validate_constraints"],
+      cautions: "Repeated low-value actions increase risk and can fail governance gates.",
+    },
+  };
+
+  const SESSION = {
+    selectedTask: "easy_missing_and_dupes",
+    runs: [],
+    stepLog: [],
+    lastReport: null,
+    lastEval: null,
+    startedAt: performance.now(),
+    pendingLevelStartTask: null
+  };
+
+  function getTaskMeta(taskId) {
+    return TASK_META[taskId] || TASK_META.easy_missing_and_dupes;
+  }
+
+  function updateTaskIndicators(step = 0, budget = null) {
+    const meta = getTaskMeta(SESSION.selectedTask);
+    const stepBudget = budget || meta.budget;
+
+    const taskTag = document.getElementById("active-task-tag");
+    if (taskTag) {
+      taskTag.textContent = `● ${meta.label}`;
+    }
+
+    const levelTag = document.getElementById("active-level-tag");
+    if (levelTag) {
+      levelTag.textContent = `${meta.icon} ${meta.level}`;
+      levelTag.style.color = meta.color;
+      levelTag.style.background = meta.bg;
+      levelTag.style.borderColor = meta.border;
+    }
+
+    const levelBadge = document.getElementById("runner-level-badge");
+    if (levelBadge) {
+      levelBadge.textContent = `Level: ${meta.level}`;
+      levelBadge.style.color = meta.color;
+      levelBadge.style.background = meta.bg;
+      levelBadge.style.borderColor = meta.border;
+    }
+
+    const levelSelect = document.getElementById("runner-level-select");
+    if (levelSelect && levelSelect.value !== SESSION.selectedTask) {
+      levelSelect.value = SESSION.selectedTask;
+    }
+
+    if (document.getElementById("topbar-title")?.textContent === "Agent Runner") {
+      document.getElementById("topbar-sub").textContent = `${meta.label} · ${meta.level} · Step ${step} of ${stepBudget}`;
+    }
+  }
+
+  function setTaskById(taskId, autoRun = true) {
+    SESSION.selectedTask = taskId || SESSION.selectedTask;
+    document.querySelectorAll('.task-card').forEach(c => {
+      c.classList.toggle('selected', c.getAttribute("data-task-id") === SESSION.selectedTask);
+    });
+    updateTaskIndicators();
+    if (autoRun) {
+      openLevelBriefing(SESSION.selectedTask);
+    }
+  }
+
+  function openLevelBriefing(taskId = SESSION.selectedTask) {
+    SESSION.pendingLevelStartTask = taskId || SESSION.selectedTask;
+    const meta = getTaskMeta(SESSION.pendingLevelStartTask);
+    const backdrop = document.getElementById("level-briefing-backdrop");
+
+    document.getElementById("level-brief-title").textContent = `${meta.level} Level - ${meta.label}`;
+
+    const levelTag = document.getElementById("level-brief-level-tag");
+    levelTag.textContent = `${meta.icon} ${meta.level}`;
+    levelTag.style.color = meta.color;
+    levelTag.style.background = meta.bg;
+    levelTag.style.borderColor = meta.border;
+
+    document.getElementById("level-brief-objective").textContent = meta.objective;
+    document.getElementById("level-brief-workflow").textContent = `${meta.workflow} Budget: ${meta.budget} steps.`;
+    document.getElementById("level-brief-actions").textContent = meta.actions.join(" -> ");
+    document.getElementById("level-brief-cautions").textContent = meta.cautions;
+
+    backdrop.classList.add("open");
+  }
+
+  function closeLevelBriefing() {
+    const backdrop = document.getElementById("level-briefing-backdrop");
+    if (backdrop) {
+      backdrop.classList.remove("open");
+    }
+  }
+
+  function confirmLevelBriefingStart() {
+    const taskId = SESSION.pendingLevelStartTask || SESSION.selectedTask;
+    closeLevelBriefing();
+    setTaskById(taskId, false);
+    startNewRun();
+  }
+
+  function clamp01(v) {
+    return Math.max(0, Math.min(1, Number(v || 0)));
+  }
+
+  function nowTs() {
+    const elapsed = (performance.now() - SESSION.startedAt) / 1000;
+    return elapsed.toFixed(2).padStart(6, "0");
+  }
+
+  function toPct(v) {
+    return `${Math.round(clamp01(v) * 100)}%`;
+  }
+
+  async function api(path, options = {}) {
+    const res = await fetch(path, {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Request failed: ${res.status}`);
+    }
+    return res.json();
+  }
+
+  function appendStepLog(operation, resultText, level) {
+    const logEl = document.getElementById("runner-step-log");
+    const levelClass = level === "error" ? "log-result-err" : level === "warn" ? "log-result-warn" : "log-result-ok";
+    const row = document.createElement("div");
+    row.className = "log-line";
+    row.innerHTML = `<span class="log-ts">${nowTs()}</span><span class="log-action">${operation}</span><span class="${levelClass}">${resultText}</span>`;
+    logEl.appendChild(row);
+    if (logEl.children.length > 40) {
+      logEl.removeChild(logEl.firstChild);
+    }
+    logEl.scrollTop = logEl.scrollHeight;
+    SESSION.stepLog.push({ operation, resultText, level, ts: Date.now() });
+  }
+
+  function renderObservation(observation, info = {}, reward = {}) {
+    const stateStatus = info.submitted ? "done" : "running";
+    const box = document.getElementById("runner-observation-box");
+    const pretty = {
+      status: stateStatus,
+      step: info.step_count || 0,
+      task_id: observation.task_id,
+      quality_report: observation.quality_report,
+      validation_passed: observation.validation_passed,
+      step_budget_remaining: observation.step_budget_remaining,
+      reward_total: Number(reward.total || 0).toFixed(3),
+      risk: info.governance ? info.governance.risk_score : 0,
+    };
+    box.textContent = JSON.stringify(pretty, null, 2);
+    box.style.whiteSpace = "pre-wrap";
+
+    const budget = info.step_budget || 0;
+    const step = info.step_count || 0;
+    document.getElementById("runner-step-budget").textContent = `Step ${step} / ${budget}`;
+    updateTaskIndicators(step, budget);
+    const statusTag = document.getElementById("runner-status-tag");
+    statusTag.textContent = info.submitted ? "● Completed" : "● Running";
+    statusTag.style.color = info.submitted ? "#065f46" : "#065f46";
+
+    const qualityVal = clamp01(reward.quality_delta || 0);
+    const efficiencyRatio = budget > 0 ? step / budget : 0;
+    const riskNorm = clamp01((info.governance?.risk_score || 0) / 100);
+    document.getElementById("reward-quality-val").textContent = Number(reward.total || 0).toFixed(3);
+    document.getElementById("reward-quality-bar").style.width = toPct(qualityVal);
+    document.getElementById("reward-efficiency-val").textContent = `${step}/${budget} steps`;
+    document.getElementById("reward-efficiency-bar").style.width = toPct(efficiencyRatio);
+    document.getElementById("reward-risk-val").textContent = riskNorm.toFixed(2);
+    document.getElementById("reward-risk-bar").style.width = toPct(riskNorm);
+
+    const rewardComponents = info.reward_components || {};
+    const categoryImprovements = rewardComponents.category_improvements || {};
+    const componentLines = [
+      `quality_delta: +${Number(reward.quality_delta || 0).toFixed(3)}`,
+      `progress_reward: +${Number(reward.progress_reward || 0).toFixed(3)}`,
+      `validation_bonus: +${Number(reward.validation_bonus || 0).toFixed(3)}`,
+      `immediate_reward: +${Number(reward.immediate_reward || 0).toFixed(3)}`,
+      `efficiency_penalty: -${Number(reward.efficiency_penalty || 0).toFixed(3)}`,
+      `safety_penalty: -${Number(reward.safety_penalty || 0).toFixed(3)}`,
+      `terminal_bonus: ${Number(reward.terminal_bonus || 0).toFixed(3)}`,
+      `repeat_streak: ${Number(rewardComponents.repeat_streak || 1).toFixed(0)}`,
+    ];
+    const topCategories = Object.entries(categoryImprovements)
+      .map(([name, value]) => `${name}:+${Number(value).toFixed(1)}`)
+      .join(" · ");
+    if (topCategories) {
+      componentLines.push(`category_progress: ${topCategories}`);
+    }
+    document.getElementById("reward-breakdown").textContent = componentLines.join("\n");
+  }
+
+  function renderGovernance(report, evaluation) {
+    const riskList = document.getElementById("governance-risk-list");
+    const events = report.governance?.events || [];
+    if (!events.length) {
+      riskList.innerHTML = `<div class="risk-row" style="border-bottom:none"><div class="risk-step-num">00</div><div><div class="risk-step-name">No steps yet</div><div class="risk-step-desc">Run actions to populate governance trace</div></div><div class="risk-score-badge risk-low">0 low</div></div>`;
+    } else {
+      riskList.innerHTML = events.map((evt, idx) => {
+        const levelClass = evt.risk_level === "high" ? "risk-high" : evt.risk_level === "medium" ? "risk-med" : "risk-low";
+        const flags = (evt.flags || []).join(", ") || "no flags";
+        return `<div class="risk-row" ${idx === events.length - 1 ? "style='border-bottom:none'" : ""}><div class="risk-step-num">${String(idx + 1).padStart(2, "0")}</div><div><div class="risk-step-name">${flags}</div><div class="risk-step-desc">quality improvement: ${evt.quality_improvement}</div></div><div class="risk-score-badge ${levelClass}">${evt.risk_score} ${evt.risk_level}</div></div>`;
+      }).join("");
+    }
+
+    const gatesEl = document.getElementById("governance-ci-gates");
+    const gates = evaluation?.gates || [];
+    if (!gates.length) {
+      gatesEl.innerHTML = `<div class="audit-gate" style="margin-bottom:0"><div><div class="gate-label">Waiting for evaluation</div><div class="gate-desc">Run and evaluate an episode to see CI gates.</div></div><div class="gate-status">PENDING</div></div>`;
+    } else {
+      gatesEl.innerHTML = gates.map((g, idx) => {
+        const fail = !g.passed;
+        const gateClass = fail ? "audit-gate audit-gate-fail" : "audit-gate";
+        const labelClass = fail ? "gate-label gate-label-fail" : "gate-label";
+        const descClass = fail ? "gate-desc gate-desc-fail" : "gate-desc";
+        const statusClass = fail ? "gate-status gate-status-fail" : "gate-status";
+        const status = g.passed ? "PASS" : "FLAG";
+        const suffix = idx === gates.length - 1 ? "style='margin-bottom:0'" : "";
+        return `<div class='${gateClass}' ${suffix}><div><div class='${labelClass}'>${g.name}</div><div class='${descClass}'>actual ${Number(g.actual).toFixed(3)} ${g.comparator} ${Number(g.expected).toFixed(3)}</div></div><div class='${statusClass}'>${status}</div></div>`;
+      }).join("");
+    }
+
+    const flagsEl = document.getElementById("governance-flags-list");
+    const topFlags = report.governance?.summary?.top_flags || [];
+    const recommendations = (report.governance?.events || []).flatMap(evt => evt.recommendations || []).slice(-3);
+    if (!topFlags.length && !recommendations.length) {
+      flagsEl.innerHTML = `<div style="display:flex;gap:10px;align-items:flex-start"><div style="width:28px;height:28px;border-radius:6px;background:var(--indigo-soft);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--indigo);flex-shrink:0">i</div><div><div style="font-size:12px;font-weight:600;margin-bottom:3px">No governance flags yet</div><div style="font-size:11px;color:var(--text-secondary);line-height:1.5">Execute actions to populate recommendations.</div></div></div>`;
+    } else {
+      const items = [...topFlags.map(f => `${f.flag} (${f.count})`), ...recommendations].slice(0, 3);
+      flagsEl.innerHTML = items.map((text, idx) => `<div style="display:flex;gap:10px;align-items:flex-start;${idx < items.length - 1 ? 'margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border-soft)' : ''}"><div style="width:28px;height:28px;border-radius:6px;background:${idx === 0 ? 'var(--rose-soft)' : 'var(--amber-soft)'};display:flex;align-items:center;justify-content:center;font-size:12px;color:${idx === 0 ? 'var(--rose)' : 'var(--amber)'};flex-shrink:0">${idx === 0 ? '!' : '△'}</div><div><div style="font-size:12px;font-weight:600;margin-bottom:3px">Risk signal</div><div style="font-size:11px;color:var(--text-secondary);line-height:1.5">${text}</div></div></div>`).join("");
+    }
+  }
+
+  function renderLeaderboard() {
+    const list = document.getElementById("leaderboard-list");
+    const sorted = [...SESSION.runs].sort((a, b) => b.metrics.composite_score - a.metrics.composite_score);
+    const rows = sorted.slice(0, 7);
+    if (!rows.length) {
+      return;
+    }
+
+    const verdictClass = {
+      approved: "verdict-pass",
+      rejected: "verdict-fail",
+      review: "verdict-review",
+    };
+    list.innerHTML = list.firstElementChild.outerHTML + rows.map((run, i) => {
+      const score = clamp01(run.metrics.composite_score);
+      const color = score >= 0.75 ? "var(--indigo)" : score >= 0.5 ? "var(--amber)" : "var(--rose)";
+      const verdict = run.decision || "review";
+      const policy = `task=${run.leaderboard_record.task_id} | risk=${run.metrics.max_risk_score}`;
+      return `<div class="lb-row"><div class="lb-rank ${i===0?'lb-rank-1':i===1?'lb-rank-2':i===2?'lb-rank-3':''}">${i+1}</div><div class="lb-agent">session-agent</div><div class="lb-policy">${policy}</div><div><div class="lb-bar-track"><div class="lb-bar-fill" style="width:${toPct(score)};background:${color}"></div></div></div><div class="lb-score" style="color:${color}">${score.toFixed(3)}</div><div class="lb-verdict ${verdictClass[verdict] || 'verdict-review'}">${verdict.toUpperCase()}</div></div>`;
+    }).join("");
+  }
+
+  function renderKpis() {
+    const total = SESSION.runs.length;
+    const avgScore = total ? SESSION.runs.reduce((a, r) => a + (r.metrics.final_score || 0), 0) / total : 0;
+    const approved = total ? SESSION.runs.filter(r => r.decision === "approved").length / total : 0;
+    const avgRisk = total ? SESSION.runs.reduce((a, r) => a + (r.metrics.max_risk_score || 0), 0) / total / 100 : 0;
+    document.getElementById("kpi-total-runs").textContent = String(total);
+    document.getElementById("kpi-avg-quality").textContent = avgScore.toFixed(3);
+    document.getElementById("kpi-auto-approved").textContent = `${(approved * 100).toFixed(1)}%`;
+    document.getElementById("kpi-avg-risk").textContent = avgRisk.toFixed(2);
+  }
+
+  function renderRecentRuns() {
+    const el = document.getElementById("recent-runs-list");
+    const rows = SESSION.runs.slice(-4).reverse();
+    if (!rows.length) {
+      return;
+    }
+    el.innerHTML = rows.map((r, idx) => {
+      const score = clamp01(r.metrics.final_score);
+      const verdict = (r.decision || "review").toUpperCase();
+      const cls = verdict === "APPROVED" ? "verdict-pass" : verdict === "REJECTED" ? "verdict-fail" : "verdict-review";
+      return `<div class="lb-row"><div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-secondary);min-width:72px">run_${String(SESSION.runs.length-idx).padStart(4,'0')}</div><div style="flex:1;font-size:12px;font-weight:500">session-agent · ${r.leaderboard_record.difficulty}</div><div class="lb-verdict ${cls}">${verdict}</div><div class="lb-score">${score.toFixed(3)}</div></div>`;
+    }).join("");
+  }
+
+  function renderReport(report, evaluation) {
+    document.getElementById("report-final-score").textContent = Number(report.episode.final_score || 0).toFixed(3);
+    const verdictEl = document.getElementById("report-verdict");
+    const decision = evaluation?.decision || "waiting";
+    verdictEl.textContent = `● ${decision.toUpperCase()}`;
+    verdictEl.style.color = decision === "approved" ? "#065f46" : decision === "rejected" ? "#be123c" : "#4f46e5";
+    const trace = {
+      task: report.task,
+      episode: report.episode,
+      metrics: evaluation?.metrics || {},
+      failed_gates: evaluation?.failed_gates || [],
+      governance: report.governance?.summary || {},
+    };
+    const audit = document.getElementById("audit-json-trace");
+    audit.textContent = JSON.stringify(trace, null, 2);
+    audit.style.whiteSpace = "pre-wrap";
+  }
+
+  function renderApiSettings(state) {
+    const base = window.location.origin || "/";
+    document.getElementById("api-base-url").textContent = base;
+    document.getElementById("api-selected-task").textContent = state.task_id || SESSION.selectedTask;
+    document.getElementById("api-step-budget").textContent = String(state.step_budget || 0);
+    document.getElementById("api-steps-used").textContent = String(state.step_count || 0);
+    document.getElementById("api-validation-status").textContent = String(Boolean(state.validation_passed));
+    document.getElementById("api-last-decision").textContent = (SESSION.lastEval?.decision || "waiting").toUpperCase();
+
+    const healthTag = document.getElementById("api-health-tag");
+    const ok = !SESSION.lastEval?.failed_gates?.length;
+    healthTag.textContent = ok ? "● healthy" : "● needs review";
+    healthTag.style.background = ok ? "var(--emerald-soft)" : "var(--amber-soft)";
+    healthTag.style.color = ok ? "#065f46" : "#92400e";
+    healthTag.style.borderColor = ok ? "#a7f3d0" : "#fcd34d";
+
+    const endpointMap = {
+      "POST /reset": "Initialize selected task and return first observation",
+      "POST /step": "Apply an action and return observation + reward",
+      "GET /state": "Read current environment state snapshot",
+      "GET /report": "Get governance-aware run report",
+      "POST /evaluate": "Run CI-style gates and decisioning",
+      "GET /ui": "Serve interactive DataQA Bench dashboard"
+    };
+    document.getElementById("api-endpoints-list").textContent = JSON.stringify(endpointMap, null, 2);
+  }
+
+  function renderTaskLibrary() {
+    const catalog = [
+      {
+        id: "easy_missing_and_dupes",
+        label: "Easy",
+        defects: 12,
+        budget: 40,
+        detail: "Fix null values and deduplicate rows by key.",
+      },
+      {
+        id: "medium_type_and_category",
+        label: "Medium",
+        defects: 28,
+        budget: 60,
+        detail: "Resolve type casting and category normalization issues.",
+      },
+      {
+        id: "hard_conflicts_and_budget",
+        label: "Hard",
+        defects: 54,
+        budget: 80,
+        detail: "Handle source conflicts and outliers under strict budget.",
+      },
+    ];
+    const list = document.getElementById("task-library-list");
+    list.innerHTML = catalog.map((t, idx) => {
+      const active = SESSION.selectedTask === t.id;
+      const badgeClass = t.label === "Hard" ? "risk-high" : t.label === "Medium" ? "risk-med" : "risk-low";
+      return `<div class="risk-row" ${idx === catalog.length - 1 ? "style='border-bottom:none'" : ""}><div class="risk-step-num">${String(idx + 1).padStart(2, "0")}</div><div><div class="risk-step-name">${t.id}</div><div class="risk-step-desc">${t.detail} · defects=${t.defects} · budget=${t.budget}</div></div><div style="display:flex;gap:8px;align-items:center"><div class="risk-score-badge ${badgeClass}">${t.label}</div><button class="btn" style="font-size:11px;padding:4px 10px" onclick="selectTaskById('${t.id}')">${active ? "selected" : "run"}</button></div></div>`;
+    }).join("");
+    document.getElementById("task-library-count").textContent = `${catalog.length} tasks`;
+    document.getElementById("task-library-active").textContent = SESSION.selectedTask;
+  }
+
+  function selectTaskById(taskId) {
+    const card = document.querySelector(`.task-card[data-task-id='${taskId}']`);
+    if (card) {
+      selectTask(card);
+    }
+  }
+
+  function ensureVisibleScreen(preferred = "runner") {
+    const active = document.querySelector('.screen.active');
+    if (active) {
+      return;
+    }
+    const fallback = document.getElementById('screen-' + preferred) || document.getElementById('screen-dashboard');
+    if (fallback) {
+      fallback.classList.add('active');
+    }
+  }
+
+  async function refreshFromServer() {
+    const state = await api("/state");
+    const report = await api("/report");
+    const evaluation = await api("/evaluate", { method: "POST", body: JSON.stringify({ thresholds: {} }) });
+    SESSION.lastReport = report;
+    SESSION.lastEval = evaluation;
+    if (report.episode.step_count > 0) {
+      SESSION.runs.push(evaluation);
+      renderRecentRuns();
+      renderLeaderboard();
+    }
+    renderKpis();
+    renderGovernance(report, evaluation);
+    renderReport(report, evaluation);
+    renderTaskLibrary();
+    renderApiSettings(state);
+    const pseudoInfo = {
+      step_count: state.step_count,
+      step_budget: state.step_budget,
+      submitted: state.submitted,
+      governance: { risk_score: report.governance?.summary?.max_risk_score || 0 }
+    };
+    renderObservation({
+      task_id: state.task_id,
+      quality_report: state.quality_report,
+      validation_passed: state.validation_passed,
+      step_budget_remaining: Math.max(0, state.step_budget - state.step_count),
+    }, pseudoInfo, { total: report.episode.cumulative_reward || 0, quality_delta: 0 });
+  }
+
+  async function startNewRun() {
+    try {
+      SESSION.startedAt = performance.now();
+      SESSION.stepLog = [];
+      await api("/reset", {
+        method: "POST",
+        body: JSON.stringify({ task_id: SESSION.selectedTask }),
+      });
+      updateTaskIndicators(0, getTaskMeta(SESSION.selectedTask).budget);
+      const logEl = document.getElementById("runner-step-log");
+      logEl.innerHTML = "";
+      appendStepLog("reset()", `→ env initialized, task: ${SESSION.selectedTask}`, "ok");
+      await refreshFromServer();
+      showScreen("runner");
+    } catch (err) {
+      appendStepLog("reset()", `→ failed: ${err.message}`, "error");
+    }
+  }
+
+  async function runAction(operation, targetColumns = []) {
+    try {
+      const payload = {
+        operation,
+        target_columns: targetColumns,
+        parameters: {},
+      };
+      const result = await api("/step", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      const level = result.info?.invalid_action ? "warn" : (result.done ? "ok" : "ok");
+      const delta = Number(result.reward.total || 0).toFixed(3);
+      appendStepLog(`${operation}()`, `→ reward ${delta}${result.done ? `, done=${result.done}` : ""}`, level);
+      renderObservation(result.observation, result.info, result.reward);
+      const report = await api("/report");
+      const evaluation = await api("/evaluate", { method: "POST", body: JSON.stringify({ thresholds: {} }) });
+      SESSION.lastReport = report;
+      SESSION.lastEval = evaluation;
+      renderGovernance(report, evaluation);
+      renderReport(report, evaluation);
+
+      if (result.done) {
+        SESSION.runs.push(evaluation);
+        renderKpis();
+        renderRecentRuns();
+        renderLeaderboard();
+      }
+      return result;
+    } catch (err) {
+      appendStepLog(`${operation}()`, `→ failed: ${err.message}`, "error");
+      return null;
+    }
+  }
+
+  async function runSuggestedPlan() {
+    const plans = {
+      easy_missing_and_dupes: [
+        ["inspect_schema", []],
+        ["clean_missing", ["amount"]],
+        ["deduplicate", []],
+        ["validate_constraints", []],
+        ["submit", []],
+      ],
+      medium_type_and_category: [
+        ["inspect_schema", []],
+        ["profile_column", ["amount"]],
+        ["clean_missing", ["amount"]],
+        ["deduplicate", []],
+        ["cast_type", ["amount"]],
+        ["normalize_categories", ["region"]],
+        ["cap_outliers", ["amount"]],
+        ["validate_constraints", []],
+        ["submit", []],
+      ],
+      hard_conflicts_and_budget: [
+        ["inspect_schema", []],
+        ["profile_column", ["amount"]],
+        ["clean_missing", ["amount"]],
+        ["deduplicate", []],
+        ["cast_type", ["amount"]],
+        ["normalize_categories", ["region"]],
+        ["cap_outliers", ["amount"]],
+        ["validate_constraints", []],
+        ["submit", []],
+      ],
+    };
+    const plan = plans[SESSION.selectedTask] || plans.easy_missing_and_dupes;
+    appendStepLog("auto_plan()", `→ executing ${plan.length} planned actions`, "ok");
+    for (const [operation, targetColumns] of plan) {
+      const result = await runAction(operation, targetColumns);
+      if (!result || result.done) {
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 120));
+    }
+  }
+
+  function downloadRunReport() {
+    const data = SESSION.lastReport || { note: "No run report available yet." };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `run-report-${SESSION.selectedTask}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportPdf() {
+    const data = SESSION.lastReport || { note: "No run report available yet." };
+    const content = JSON.stringify(data, null, 2);
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `run-report-${SESSION.selectedTask}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function showScreen(id) {
+    const target = document.getElementById('screen-' + id);
+    if (!target) {
+      ensureVisibleScreen();
+      return;
+    }
+
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    target.classList.add('active');
+
+    const titles = {
+      runner: ['Agent Runner', 'hard_conflicts_and_budget · Step 7 of 80'],
+      dashboard: ['Overview', 'DataQA Bench · Data Quality Triage'],
+      dataset: ['Dataset Inspector', 'hard_conflicts_and_budget.json · 3,000 rows'],
+      governance: ['Governance', 'run_1284 · gpt-4o · Risk & Audit Gates'],
+      leaderboard: ['Leaderboard', 'All tasks · 1,284 evaluation runs'],
+      report: ['Audit Report', 'run_1284 · gpt-4o · Final evaluation payload'],
+      'api-settings': ['API Settings', 'Runtime and endpoint configuration'],
+      'task-library': ['Task Library', 'Task definitions and quick launch']
+    };
+
+    if (titles[id]) {
+      document.getElementById('topbar-title').textContent = titles[id][0];
+      document.getElementById('topbar-sub').textContent = titles[id][1];
+    }
+    if (id === "runner") {
+      updateTaskIndicators();
+    }
+
+    const navMap = {
+      runner: 0, dashboard: 1, dataset: 2, governance: 3, leaderboard: 4, report: 5, 'api-settings': 6, 'task-library': 7
+    };
+
+    const navItems = document.querySelectorAll('.nav-item');
+    const idx = navMap[id];
+    if (idx !== undefined && navItems[idx]) navItems[idx].classList.add('active');
+  }
+
+  function selectTask(el) {
+    const taskId = el.getAttribute("data-task-id") || SESSION.selectedTask;
+    setTaskById(taskId, true);
+  }
+
+  window.addEventListener("load", () => {
+    ensureVisibleScreen("runner");
+    updateTaskIndicators();
+    renderTaskLibrary();
+    renderApiSettings({
+      task_id: SESSION.selectedTask,
+      step_budget: 0,
+      step_count: 0,
+      validation_passed: false,
+    });
+    openLevelBriefing(SESSION.selectedTask);
+  });
+</script>
+</body>
+</html>

@@ -1,3 +1,20 @@
+Metadata-Version: 2.4
+Name: data-quality-openenv
+Version: 0.1.0
+Summary: OpenEnv data analysis environment for data quality triage
+Author: data_ana
+License: MIT
+Keywords: openenv,data-analysis,rl,environment
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: pydantic<3.0,>=2.7
+Requires-Dist: openai>=1.0.0
+Requires-Dist: openenv-core>=0.2.0
+Requires-Dist: fastapi<1.0.0,>=0.111.0
+Requires-Dist: uvicorn<1.0.0,>=0.30.0
+Provides-Extra: dev
+Requires-Dist: pytest<9.0,>=8.0; extra == "dev"
+
 ---
 title: Data Quality Triage Assistant
 emoji: "📊"
@@ -9,7 +26,6 @@ tags:
   - openenv
   - data-analysis
   - evaluation
-base_path: /web
 ---
 
 # Data Quality Triage Assistant (OpenEnv)

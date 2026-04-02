@@ -9,7 +9,6 @@ tags:
   - openenv
   - data-analysis
   - evaluation
-base_path: /web
 ---
 
 # Data Quality Triage Assistant (OpenEnv)

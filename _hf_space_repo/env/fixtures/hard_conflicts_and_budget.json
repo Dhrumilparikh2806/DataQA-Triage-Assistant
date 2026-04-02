@@ -1,0 +1,6 @@
+{
+  "task_id": "hard_conflicts_and_budget",
+  "dataset_id": "finance_hard_v3",
+  "rows": 980,
+  "notes": "Deterministic hard fixture with conflicting constraints and tight budget."
+}
