@@ -254,31 +254,15 @@
     padding: 24px;
   }
 
-  .content-area.level-not-selected {
-    background: var(--canvas);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-  }
-
-  .content-area.level-not-selected .screen {
-    display: none !important;
-  }
-
   /* ── LEVEL SELECTOR BAR ── */
   .level-selector-bar {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     padding: 16px 24px;
-    display: none;
+    display: flex;
     align-items: center;
     gap: 16px;
     flex-wrap: wrap;
-  }
-
-  .level-selector-bar.visible {
-    display: flex;
   }
 
   .level-selector-label {
@@ -2422,7 +2406,6 @@
     const taskId = SESSION.pendingLevelStartTask || SESSION.selectedTask;
     closeLevelBriefing();
     setTaskById(taskId, false);
-    hideLevelSelectorBar();
     startNewRun();
   }
 
@@ -2442,23 +2425,15 @@
 
   function showLevelSelectorBar() {
     const bar = document.getElementById("level-selector-bar");
-    const contentArea = document.querySelector(".content-area");
     if (bar) {
-      bar.classList.add("visible");
-    }
-    if (contentArea) {
-      contentArea.classList.add("level-not-selected");
+      bar.style.display = "flex";
     }
   }
 
   function hideLevelSelectorBar() {
     const bar = document.getElementById("level-selector-bar");
-    const contentArea = document.querySelector(".content-area");
     if (bar) {
-      bar.classList.remove("visible");
-    }
-    if (contentArea) {
-      contentArea.classList.remove("level-not-selected");
+      bar.style.display = "none";
     }
   }
 
@@ -3079,14 +3054,14 @@
     setPlaygroundStatus("ready", "ok");
     updatePlaygroundMeta({ action: "none", step: 0, submitted: false });
     
-    // Hide all content until level is selected
-    showLevelSelectorBar();
-    const contentArea = document.querySelector(".content-area");
-    if (contentArea) {
-      contentArea.classList.add("level-not-selected");
-    }
+    // Load and display all content
+    refreshFromServer().catch(err => console.error("Error loading data:", err));
     
-    // Show intro modal immediately on page load
+    // Show level selector bar
+    showLevelSelectorBar();
+    updateLevelSelectorButton(SESSION.selectedTask);
+    
+    // Show intro modal on page load
     const backdrop = document.getElementById("intro-backdrop");
     if (backdrop) {
       backdrop.classList.add("open");
@@ -3094,9 +3069,6 @@
     } else {
       console.error("✗ Intro backdrop element not found");
     }
-    
-    // Load leaderboard data in background
-    refreshFromServer().catch(err => console.error("Error loading data:", err));
   });
 </script>
 </body>
