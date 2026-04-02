@@ -2293,7 +2293,7 @@
       const saved = localStorage.getItem(STORAGE_KEY);
       return saved ? JSON.parse(saved) : [];
     } catch (e) {
-      console.error("Failed to load runs from localStorage:", e);
+      // Storage can be blocked in some browser privacy modes; default to empty list.
       return [];
     }
   }
@@ -2302,7 +2302,7 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(runs));
     } catch (e) {
-      console.error("Failed to save runs to localStorage:", e);
+      // Ignore storage failures to keep UI functional in restricted contexts.
     }
   }
 
@@ -2318,7 +2318,7 @@
     try {
       localStorage.setItem(INTRO_SHOWN_KEY, "true");
     } catch (e) {
-      console.error("Failed to mark intro as seen:", e);
+      // Ignore storage failures in privacy-restricted sessions.
     }
   }
 
@@ -2327,7 +2327,7 @@
       localStorage.removeItem(INTRO_SHOWN_KEY);
       showIntroModal();
     } catch (e) {
-      console.error("Failed to reset intro:", e);
+      showIntroModal();
     }
   }
 
@@ -2435,7 +2435,6 @@
 
   function handleLevelChange(taskId) {
     if (!taskId) {
-      console.log("No level selected");
       return;
     }
     SESSION.selectedTask = taskId;
@@ -3053,7 +3052,7 @@
     updatePlaygroundMeta({ action: "none", step: 0, submitted: false });
     
     // Load and display all content
-    refreshFromServer().catch(err => console.error("Error loading data:", err));
+    refreshFromServer().catch(() => setPlaygroundStatus("initial data load failed", "warn"));
     
     // Show level selector dropdown - reset to no selection
     updateLevelSelectorDropdown("");
@@ -3062,9 +3061,6 @@
     const backdrop = document.getElementById("intro-backdrop");
     if (backdrop) {
       backdrop.classList.add("open");
-      console.log("✓ Intro modal displayed");
-    } else {
-      console.error("✗ Intro backdrop element not found");
     }
   });
 </script>
