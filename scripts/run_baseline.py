@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import sys
 from typing import List
 
@@ -27,6 +28,45 @@ FALLBACK_TARGETS = {
     "cap_outliers": ["amount"],
     "profile_column": ["amount"],
 }
+
+JSON_FENCE_RE = re.compile(r"```(?:json)?\s*([\s\S]*?)\s*```", re.IGNORECASE)
+
+
+def _extract_action_payload(raw_text: str) -> dict:
+    """Parse action payload from plain or markdown-fenced JSON text."""
+    candidates: list[str] = []
+    text = (raw_text or "").strip()
+    if text:
+        candidates.append(text)
+
+    fence_match = JSON_FENCE_RE.search(text)
+    if fence_match:
+        fenced = (fence_match.group(1) or "").strip()
+        if fenced:
+            candidates.append(fenced)
+
+    decoder = json.JSONDecoder()
+    for candidate in candidates:
+        # First try strict whole-string JSON parsing.
+        try:
+            payload = json.loads(candidate)
+            if isinstance(payload, dict):
+                return payload
+        except Exception:
+            pass
+
+        # Then try to decode the first JSON object inside mixed text.
+        for idx, ch in enumerate(candidate):
+            if ch != "{":
+                continue
+            try:
+                payload, _end = decoder.raw_decode(candidate[idx:])
+                if isinstance(payload, dict):
+                    return payload
+            except Exception:
+                continue
+
+    raise ValueError("No valid JSON object found in model response")
 
 
 def _run_single_task(task_id: str) -> float:
@@ -87,7 +127,7 @@ def _llm_action(client: OpenAI, model: str, observation_text: str, step_idx: int
     )
     raw_text = (resp.output_text or "").strip()
     try:
-        payload = json.loads(raw_text)
+        payload = _extract_action_payload(raw_text)
         return Action(
             operation=payload.get("operation", "inspect_schema"),
             target_columns=payload.get("target_columns", []),

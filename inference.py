@@ -6,6 +6,7 @@ Compliant with hackathon requirements.
 import os
 import textwrap
 import json
+import re
 from typing import List, Optional
 
 from openai import OpenAI
@@ -27,6 +28,8 @@ MAX_STEPS = 16
 TEMPERATURE = 0.7
 MAX_TOKENS = 200
 SUCCESS_SCORE_THRESHOLD = 0.5
+
+JSON_FENCE_RE = re.compile(r"```(?:json)?\s*([\s\S]*?)\s*```", re.IGNORECASE)
 
 SYSTEM_PROMPT = textwrap.dedent(
     """
@@ -105,6 +108,41 @@ def build_user_prompt(
     ).strip()
 
 
+def extract_action_payload(raw_text: str) -> dict:
+    """Parse action payload from plain or markdown-fenced JSON text."""
+    candidates: list[str] = []
+    text = (raw_text or "").strip()
+    if text:
+        candidates.append(text)
+
+    fence_match = JSON_FENCE_RE.search(text)
+    if fence_match:
+        fenced = (fence_match.group(1) or "").strip()
+        if fenced:
+            candidates.append(fenced)
+
+    decoder = json.JSONDecoder()
+    for candidate in candidates:
+        try:
+            payload = json.loads(candidate)
+            if isinstance(payload, dict):
+                return payload
+        except Exception:
+            pass
+
+        for idx, ch in enumerate(candidate):
+            if ch != "{":
+                continue
+            try:
+                payload, _end = decoder.raw_decode(candidate[idx:])
+                if isinstance(payload, dict):
+                    return payload
+            except Exception:
+                continue
+
+    raise ValueError("No valid JSON object found in model response")
+
+
 def get_model_action(
     client: OpenAI,
     step: int,
@@ -126,7 +164,7 @@ def get_model_action(
             stream=False,
         )
         text = (completion.choices[0].message.content or "").strip()
-        action_dict = json.loads(text)
+        action_dict = extract_action_payload(text)
         return action_dict, None
     except Exception as exc:
         # Controlled fallback with explicit error marker for STEP logging.
