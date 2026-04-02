@@ -3118,12 +3118,11 @@
     }
 
     document.querySelectorAll('.screen').forEach(s => {
-      s.classList.remove('active');
-      s.style.display = 'none';
+      const active = s === target;
+      s.classList.toggle('active', active);
+      s.style.display = active ? 'block' : 'none';
     });
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    target.classList.add('active');
-    target.style.display = 'block';
 
     const titles = {
       runner: ['Agent Runner', 'hard_conflicts_and_budget · Step 7 of 80'],
