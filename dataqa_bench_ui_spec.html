@@ -1026,6 +1026,137 @@
   @media (max-width: 780px) {
     .level-brief-grid { grid-template-columns: 1fr; }
   }
+
+  /* ─── INTRO MODAL ─── */
+  .intro-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .intro-modal-backdrop.open {
+    display: flex;
+  }
+
+  .intro-modal {
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    max-width: 500px;
+    width: 90%;
+    overflow: hidden;
+  }
+
+  .intro-modal-head {
+    padding: 24px 24px 12px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .intro-modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .intro-modal-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .intro-modal-body {
+    padding: 24px;
+  }
+
+  .intro-description {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  .intro-levels-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .intro-levels {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .intro-level-card {
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .intro-level-card:hover {
+    border-color: var(--indigo);
+    background: var(--indigo-soft);
+  }
+
+  .intro-level-card.selected {
+    border-color: var(--indigo);
+    background: var(--indigo-soft);
+  }
+
+  .intro-level-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .intro-level-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .intro-level-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  .intro-level-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-left: 34px;
+  }
+
+  .intro-modal-actions {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
 </style>
 </head>
 <body>
@@ -1827,6 +1958,49 @@
   </div>
 </div>
 
+<!-- ── INTRO MODAL ── -->
+<div id="intro-backdrop" class="intro-modal-backdrop" onclick="closeIntroModal()">
+  <div class="intro-modal" onclick="event.stopPropagation()">
+    <div class="intro-modal-head">
+      <div class="intro-modal-title">🎯 DataQA Triage Assistant</div>
+      <div class="intro-modal-subtitle">Welcome to your data quality journey</div>
+    </div>
+    <div class="intro-modal-body">
+      <div class="intro-description">
+        Clean, validate, and evaluate dataset quality through a guided step-by-step process. Complete challenges of varying difficulty and track your progress on the leaderboard.
+      </div>
+      <div class="intro-levels-label">Choose Your Level</div>
+      <div class="intro-levels">
+        <div class="intro-level-card" data-task="easy_missing_and_dupes" onclick="selectIntroLevel('easy_missing_and_dupes')">
+          <div class="intro-level-card-header">
+            <div class="intro-level-icon" style="background:var(--emerald-soft);color:#065f46">●</div>
+            <div class="intro-level-name">Easy</div>
+          </div>
+          <div class="intro-level-desc">Missing Values & Duplicates</div>
+        </div>
+        <div class="intro-level-card" data-task="medium_type_and_category" onclick="selectIntroLevel('medium_type_and_category')">
+          <div class="intro-level-card-header">
+            <div class="intro-level-icon" style="background:var(--amber-soft);color:#92400e">◆</div>
+            <div class="intro-level-name">Medium</div>
+          </div>
+          <div class="intro-level-desc">Type Errors & Category Drift</div>
+        </div>
+        <div class="intro-level-card" data-task="hard_conflicts_and_budget" onclick="selectIntroLevel('hard_conflicts_and_budget')">
+          <div class="intro-level-card-header">
+            <div class="intro-level-icon" style="background:var(--rose-soft);color:#be123c">■</div>
+            <div class="intro-level-name">Hard</div>
+          </div>
+          <div class="intro-level-desc">Conflicts & Budget Constraints</div>
+        </div>
+      </div>
+    </div>
+    <div class="intro-modal-actions">
+      <button class="btn" onclick="closeIntroModal()">Skip for Now</button>
+      <button class="btn btn-primary" onclick="confirmIntroLevelStart()">Start Level</button>
+    </div>
+  </div>
+</div>
+
 <div id="level-briefing-backdrop" class="level-modal-backdrop" onclick="closeLevelBriefing()">
   <div class="level-modal" onclick="event.stopPropagation()">
     <div class="level-modal-head">
@@ -1903,9 +2077,46 @@
     },
   };
 
+  const STORAGE_KEY = "dataqa_leaderboard_runs";
+  const INTRO_SHOWN_KEY = "dataqa_intro_shown";
+
+  function loadLeaderboardRuns() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Failed to load runs from localStorage:", e);
+      return [];
+    }
+  }
+
+  function saveLeaderboardRuns(runs) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(runs));
+    } catch (e) {
+      console.error("Failed to save runs to localStorage:", e);
+    }
+  }
+
+  function hasSeenIntro() {
+    try {
+      return localStorage.getItem(INTRO_SHOWN_KEY) === "true";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function markIntroAsSeen() {
+    try {
+      localStorage.setItem(INTRO_SHOWN_KEY, "true");
+    } catch (e) {
+      console.error("Failed to mark intro as seen:", e);
+    }
+  }
+
   const SESSION = {
     selectedTask: "easy_missing_and_dupes",
-    runs: [],
+    runs: loadLeaderboardRuns(),
     stepLog: [],
     lastReport: null,
     lastEval: null,
@@ -1994,6 +2205,36 @@
   function confirmLevelBriefingStart() {
     const taskId = SESSION.pendingLevelStartTask || SESSION.selectedTask;
     closeLevelBriefing();
+    setTaskById(taskId, false);
+    startNewRun();
+  }
+
+  function showIntroModal() {
+    const backdrop = document.getElementById("intro-backdrop");
+    if (backdrop) {
+      backdrop.classList.add("open");
+    }
+  }
+
+  function closeIntroModal() {
+    const backdrop = document.getElementById("intro-backdrop");
+    if (backdrop) {
+      backdrop.classList.remove("open");
+      markIntroAsSeen();
+    }
+  }
+
+  function selectIntroLevel(taskId) {
+    SESSION.pendingLevelStartTask = taskId;
+    document.querySelectorAll(".intro-level-card").forEach(card => {
+      card.classList.toggle("selected", card.getAttribute("data-task") === taskId);
+    });
+  }
+
+  function confirmIntroLevelStart() {
+    const taskId = SESSION.pendingLevelStartTask || SESSION.selectedTask;
+    closeIntroModal();
+    SESSION.selectedTask = taskId;
     setTaskById(taskId, false);
     startNewRun();
   }
@@ -2345,6 +2586,7 @@
     SESSION.lastEval = evaluation;
     if (report.episode.step_count > 0) {
       SESSION.runs.push(evaluation);
+      saveLeaderboardRuns(SESSION.runs);
       renderRecentRuns();
       renderLeaderboard();
     }
@@ -2414,6 +2656,7 @@
 
       if (result.done) {
         SESSION.runs.push(evaluation);
+        saveLeaderboardRuns(SESSION.runs);
         renderKpis();
         renderRecentRuns();
         renderLeaderboard();
@@ -2558,7 +2801,7 @@
     setTaskById(taskId, true);
   }
 
-  window.addEventListener("load", () => {
+  window.addEventListener("load", async () => {
     ensureVisibleScreen("runner");
     updateTaskIndicators();
     renderTaskLibrary();
@@ -2570,7 +2813,14 @@
     });
     setPlaygroundStatus("ready", "ok");
     updatePlaygroundMeta({ action: "none", step: 0, submitted: false });
-    openLevelBriefing(SESSION.selectedTask);
+    
+    // Load and render persisted leaderboard
+    await refreshFromServer();
+    
+    // Show intro modal on first visit
+    if (!hasSeenIntro()) {
+      showIntroModal();
+    }
   });
 </script>
 </body>
