@@ -1025,6 +1025,21 @@
 
   @media (max-width: 780px) {
     .level-brief-grid { grid-template-columns: 1fr; }
+    .intro-modal {
+      max-width: 95%;
+    }
+    .intro-modal-head {
+      padding: 32px 24px 24px;
+    }
+    .intro-modal-title {
+      font-size: 24px;
+    }
+    .intro-modal-body {
+      padding: 24px;
+    }
+    .intro-modal-actions {
+      padding: 16px 24px;
+    }
   }
 
   /* ─── INTRO MODAL ─── */
@@ -1034,128 +1049,236 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    backdrop-filter: blur(4px);
   }
 
   .intro-modal-backdrop.open {
     display: flex;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .intro-modal {
     background: var(--surface);
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    max-width: 500px;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.25), 0 0 1px rgba(0,0,0,0.15);
+    max-width: 560px;
     width: 90%;
     overflow: hidden;
+    animation: slideUp 0.4s ease-out;
   }
 
   .intro-modal-head {
-    padding: 24px 24px 12px;
-    border-bottom: 1px solid var(--border-soft);
+    background: linear-gradient(135deg, var(--indigo) 0%, #5558dc 100%);
+    padding: 40px 32px 32px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .intro-modal-head::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+  }
+
+  .intro-modal-head::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 250px;
+    height: 250px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 50%;
   }
 
   .intro-modal-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 6px;
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+    letter-spacing: -0.02em;
   }
 
   .intro-modal-subtitle {
-    font-size: 13px;
-    color: var(--text-secondary);
-    line-height: 1.5;
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+    font-weight: 400;
   }
 
   .intro-modal-body {
-    padding: 24px;
+    padding: 32px;
   }
 
   .intro-description {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text-secondary);
-    line-height: 1.7;
-    margin-bottom: 20px;
+    line-height: 1.8;
+    margin-bottom: 32px;
+    font-weight: 400;
   }
 
   .intro-levels-label {
     font-size: 11px;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     font-family: 'DM Mono', monospace;
-    margin-bottom: 12px;
-    font-weight: 600;
+    margin-bottom: 16px;
+    font-weight: 700;
   }
 
   .intro-levels {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 28px;
   }
 
   .intro-level-card {
-    padding: 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    padding: 20px;
+    border: 2px solid var(--border-soft);
+    border-radius: 12px;
     background: var(--surface);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .intro-level-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--text-secondary), transparent);
+    opacity: 0;
+    transition: opacity 0.25s ease;
   }
 
   .intro-level-card:hover {
     border-color: var(--indigo);
-    background: var(--indigo-soft);
+    background: linear-gradient(135deg, var(--indigo-soft) 0%, var(--surface) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+  }
+
+  .intro-level-card:hover::before {
+    opacity: 1;
   }
 
   .intro-level-card.selected {
     border-color: var(--indigo);
-    background: var(--indigo-soft);
+    background: linear-gradient(135deg, var(--indigo-soft) 0%, var(--surface) 100%);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+  }
+
+  .intro-level-card.selected::before {
+    opacity: 1;
   }
 
   .intro-level-card-header {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 6px;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 8px;
   }
 
   .intro-level-icon {
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 700;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .intro-level-icon::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    opacity: 0.1;
   }
 
   .intro-level-name {
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 700;
     color: var(--text-primary);
     flex: 1;
+    margin-top: 2px;
+  }
+
+  .intro-level-rank {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: 'DM Mono', monospace;
+    font-weight: 600;
   }
 
   .intro-level-desc {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-secondary);
-    margin-left: 34px;
+    margin-left: 58px;
+    line-height: 1.6;
+    font-weight: 400;
   }
 
   .intro-modal-actions {
-    padding: 16px 24px;
+    padding: 20px 32px;
     border-top: 1px solid var(--border-soft);
     display: flex;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 10px;
+    background: var(--gray-100);
+  }
+
+  .intro-modal-actions .btn {
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 20px;
+    transition: all 0.2s ease;
+  }
+
+  .intro-modal-actions .btn:hover {
+    transform: translateY(-1px);
   }
 </style>
 </head>
@@ -1962,41 +2085,50 @@
 <div id="intro-backdrop" class="intro-modal-backdrop" onclick="closeIntroModal()">
   <div class="intro-modal" onclick="event.stopPropagation()">
     <div class="intro-modal-head">
-      <div class="intro-modal-title">🎯 DataQA Triage Assistant</div>
-      <div class="intro-modal-subtitle">Welcome to your data quality journey</div>
+      <div class="intro-modal-title">DataQA Triage Assistant</div>
+      <div class="intro-modal-subtitle">Master data quality through progressive challenges</div>
     </div>
     <div class="intro-modal-body">
       <div class="intro-description">
-        Clean, validate, and evaluate dataset quality through a guided step-by-step process. Complete challenges of varying difficulty and track your progress on the leaderboard.
+        Clean, validate, and evaluate dataset quality through guided, step-by-step challenges. Progress through three difficulty levels and track your achievements on the leaderboard.
       </div>
-      <div class="intro-levels-label">Choose Your Level</div>
+      <div class="intro-levels-label">Select your starting level</div>
       <div class="intro-levels">
         <div class="intro-level-card" data-task="easy_missing_and_dupes" onclick="selectIntroLevel('easy_missing_and_dupes')">
           <div class="intro-level-card-header">
-            <div class="intro-level-icon" style="background:var(--emerald-soft);color:#065f46">●</div>
-            <div class="intro-level-name">Easy</div>
+            <div class="intro-level-icon" style="background:var(--emerald-soft);color:#065f46">1</div>
+            <div>
+              <div class="intro-level-name">Easy</div>
+              <div class="intro-level-rank">Beginner Challenge</div>
+            </div>
           </div>
-          <div class="intro-level-desc">Missing Values & Duplicates</div>
+          <div class="intro-level-desc">Handle missing values and duplicate records. Learn the fundamentals of data cleaning.</div>
         </div>
         <div class="intro-level-card" data-task="medium_type_and_category" onclick="selectIntroLevel('medium_type_and_category')">
           <div class="intro-level-card-header">
-            <div class="intro-level-icon" style="background:var(--amber-soft);color:#92400e">◆</div>
-            <div class="intro-level-name">Medium</div>
+            <div class="intro-level-icon" style="background:var(--amber-soft);color:#92400e">2</div>
+            <div>
+              <div class="intro-level-name">Medium</div>
+              <div class="intro-level-rank">Intermediate Challenge</div>
+            </div>
           </div>
-          <div class="intro-level-desc">Type Errors & Category Drift</div>
+          <div class="intro-level-desc">Resolve type mismatches and normalize category values. Master data transformation.</div>
         </div>
         <div class="intro-level-card" data-task="hard_conflicts_and_budget" onclick="selectIntroLevel('hard_conflicts_and_budget')">
           <div class="intro-level-card-header">
-            <div class="intro-level-icon" style="background:var(--rose-soft);color:#be123c">■</div>
-            <div class="intro-level-name">Hard</div>
+            <div class="intro-level-icon" style="background:var(--rose-soft);color:#be123c">3</div>
+            <div>
+              <div class="intro-level-name">Hard</div>
+              <div class="intro-level-rank">Advanced Challenge</div>
+            </div>
           </div>
-          <div class="intro-level-desc">Conflicts & Budget Constraints</div>
+          <div class="intro-level-desc">Resolve conflicts and outliers under strict constraints. Optimize for efficiency and quality.</div>
         </div>
       </div>
     </div>
     <div class="intro-modal-actions">
       <button class="btn" onclick="closeIntroModal()">Skip for Now</button>
-      <button class="btn btn-primary" onclick="confirmIntroLevelStart()">Start Level</button>
+      <button class="btn btn-primary" onclick="confirmIntroLevelStart()">Start Challenge</button>
     </div>
   </div>
 </div>
