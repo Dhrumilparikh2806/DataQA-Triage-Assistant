@@ -535,6 +535,39 @@
     white-space: pre-wrap;
   }
 
+  .playground-controls {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr auto auto auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .playground-input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text-primary);
+    padding: 7px 10px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .playground-status {
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    border: 1px solid #a7f3d0;
+    background: var(--emerald-soft);
+    color: #065f46;
+    font-family: 'DM Mono', monospace;
+  }
+
   .reward-bar-label {
     display: flex;
     justify-content: space-between;
@@ -1157,6 +1190,36 @@
       <div id="screen-runner" class="screen active">
         <div class="runner-layout">
           <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-header">
+                <div class="card-title">Playground</div>
+                <div class="card-sub">Step · Reset · Get state</div>
+              </div>
+              <div class="card-body" style="padding:14px">
+                <div class="playground-controls">
+                  <select id="playground-action-select" class="playground-input">
+                    <option value="inspect_schema">inspect_schema</option>
+                    <option value="profile_column">profile_column</option>
+                    <option value="clean_missing">clean_missing</option>
+                    <option value="deduplicate">deduplicate</option>
+                    <option value="cast_type">cast_type</option>
+                    <option value="normalize_categories">normalize_categories</option>
+                    <option value="cap_outliers">cap_outliers</option>
+                    <option value="validate_constraints">validate_constraints</option>
+                    <option value="submit">submit</option>
+                  </select>
+                  <input id="playground-targets-input" class="playground-input" placeholder="target_columns (comma separated)" value="amount" />
+                  <button class="btn btn-primary" onclick="playgroundStep()">Step</button>
+                  <button class="btn" onclick="startNewRun()">Reset</button>
+                  <button class="btn" onclick="playgroundGetState()">Get state</button>
+                </div>
+                <div id="playground-status" class="playground-status">● ready</div>
+                <div class="obs-box" id="playground-raw-response" style="margin-top:10px;max-height:240px;overflow:auto">{
+  "message": "Raw JSON response will appear here"
+}</div>
+              </div>
+            </div>
+
             <div class="card" style="margin-bottom:16px">
               <div class="card-header">
                 <div class="card-title">Environment Observation</div>
@@ -1886,6 +1949,47 @@
     return `${Math.round(clamp01(v) * 100)}%`;
   }
 
+  function setPlaygroundStatus(text, mode = "ok") {
+    const status = document.getElementById("playground-status");
+    if (!status) {
+      return;
+    }
+    status.textContent = `● ${text}`;
+    if (mode === "error") {
+      status.style.background = "var(--rose-soft)";
+      status.style.borderColor = "#fecdd3";
+      status.style.color = "#be123c";
+      return;
+    }
+    if (mode === "warn") {
+      status.style.background = "var(--amber-soft)";
+      status.style.borderColor = "#fcd34d";
+      status.style.color = "#92400e";
+      return;
+    }
+    status.style.background = "var(--emerald-soft)";
+    status.style.borderColor = "#a7f3d0";
+    status.style.color = "#065f46";
+  }
+
+  function renderPlaygroundJson(payload) {
+    const box = document.getElementById("playground-raw-response");
+    if (box) {
+      box.textContent = JSON.stringify(payload, null, 2);
+      box.style.whiteSpace = "pre-wrap";
+    }
+  }
+
+  function parseTargetColumns(rawText) {
+    if (!rawText || !rawText.trim()) {
+      return [];
+    }
+    return rawText
+      .split(",")
+      .map(part => part.trim())
+      .filter(Boolean);
+  }
+
   async function api(path, options = {}) {
     const res = await fetch(path, {
       headers: { "Content-Type": "application/json" },
@@ -2186,7 +2290,7 @@
     try {
       SESSION.startedAt = performance.now();
       SESSION.stepLog = [];
-      await api("/reset", {
+      const resetResult = await api("/reset", {
         method: "POST",
         body: JSON.stringify({ task_id: SESSION.selectedTask }),
       });
@@ -2194,10 +2298,13 @@
       const logEl = document.getElementById("runner-step-log");
       logEl.innerHTML = "";
       appendStepLog("reset()", `→ env initialized, task: ${SESSION.selectedTask}`, "ok");
+      renderPlaygroundJson({ observation: resetResult, source: "reset" });
+      setPlaygroundStatus("reset complete", "ok");
       await refreshFromServer();
       showScreen("runner");
     } catch (err) {
       appendStepLog("reset()", `→ failed: ${err.message}`, "error");
+      setPlaygroundStatus("reset failed", "error");
     }
   }
 
@@ -2229,10 +2336,31 @@
         renderRecentRuns();
         renderLeaderboard();
       }
+      renderPlaygroundJson({ step: result, source: "step" });
+      setPlaygroundStatus(result.info?.invalid_action ? "step completed with warning" : "step completed", result.info?.invalid_action ? "warn" : "ok");
       return result;
     } catch (err) {
       appendStepLog(`${operation}()`, `→ failed: ${err.message}`, "error");
+      setPlaygroundStatus("step failed", "error");
       return null;
+    }
+  }
+
+  async function playgroundStep() {
+    const operation = document.getElementById("playground-action-select")?.value || "inspect_schema";
+    const targetsRaw = document.getElementById("playground-targets-input")?.value || "";
+    const targetColumns = parseTargetColumns(targetsRaw);
+    await runAction(operation, targetColumns);
+  }
+
+  async function playgroundGetState() {
+    try {
+      const state = await api("/state");
+      renderPlaygroundJson({ state, source: "state" });
+      setPlaygroundStatus("state fetched", "ok");
+      renderApiSettings(state);
+    } catch (err) {
+      setPlaygroundStatus("state fetch failed", "error");
     }
   }
 
@@ -2356,6 +2484,7 @@
       step_count: 0,
       validation_passed: false,
     });
+    setPlaygroundStatus("ready", "ok");
     openLevelBriefing(SESSION.selectedTask);
   });
 </script>
