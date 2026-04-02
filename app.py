@@ -12,6 +12,7 @@ app = FastAPI(title="Data Quality Triage Assistant", version="0.1.0")
 UI_FILE = Path(__file__).resolve().parent / "dataqa_bench_ui_spec.html"
 
 _env = DataQualityTriageEnv(task_id="easy_missing_and_dupes")
+_env.reset()
 
 
 class ResetRequest(BaseModel):
@@ -26,6 +27,13 @@ class StepRequest(BaseModel):
 
 class EvaluateRequest(BaseModel):
     thresholds: Dict[str, float] = Field(default_factory=dict)
+
+
+def _ensure_env_ready() -> None:
+    try:
+        _env.state()
+    except RuntimeError:
+        _env.reset()
 
 
 @app.get("/")
@@ -75,6 +83,7 @@ def reset(req: ResetRequest) -> Dict[str, Any]:
 
 @app.post("/step")
 def step(req: StepRequest) -> Dict[str, Any]:
+    _ensure_env_ready()
     try:
         action = Action(
             operation=req.operation,
@@ -99,6 +108,7 @@ def step(req: StepRequest) -> Dict[str, Any]:
 
 @app.get("/state")
 def state() -> Dict[str, Any]:
+    _ensure_env_ready()
     try:
         return _env.state()
     except Exception as exc:
@@ -107,6 +117,7 @@ def state() -> Dict[str, Any]:
 
 @app.get("/report")
 def report() -> Dict[str, Any]:
+    _ensure_env_ready()
     try:
         return _env.generate_run_report()
     except Exception as exc:
@@ -115,6 +126,7 @@ def report() -> Dict[str, Any]:
 
 @app.post("/evaluate")
 def evaluate(req: EvaluateRequest) -> Dict[str, Any]:
+    _ensure_env_ready()
     try:
         return _env.evaluate_run(thresholds=req.thresholds)
     except Exception as exc:
