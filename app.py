@@ -34,6 +34,18 @@ def root() -> RedirectResponse:
     return RedirectResponse(url=f"/ui?v={version}")
 
 
+@app.get("/web")
+def web_root() -> RedirectResponse:
+    version = int(UI_FILE.stat().st_mtime) if UI_FILE.exists() else 0
+    return RedirectResponse(url=f"/ui?v={version}")
+
+
+@app.get("/web/")
+def web_root_slash() -> RedirectResponse:
+    version = int(UI_FILE.stat().st_mtime) if UI_FILE.exists() else 0
+    return RedirectResponse(url=f"/ui?v={version}")
+
+
 @app.get("/ui")
 def ui() -> FileResponse:
     if not UI_FILE.exists():

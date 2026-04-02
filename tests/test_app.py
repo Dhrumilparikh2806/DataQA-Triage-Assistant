@@ -12,6 +12,18 @@ def test_root_redirects_to_ui() -> None:
     assert resp.headers.get("location", "").startswith("/ui")
 
 
+def test_web_redirects_to_ui() -> None:
+    resp = client.get("/web", follow_redirects=False)
+    assert resp.status_code in {307, 302}
+    assert resp.headers.get("location", "").startswith("/ui")
+
+
+def test_web_slash_redirects_to_ui() -> None:
+    resp = client.get("/web/", follow_redirects=False)
+    assert resp.status_code in {307, 302}
+    assert resp.headers.get("location", "").startswith("/ui")
+
+
 def test_ui_endpoint_serves_html() -> None:
     resp = client.get("/ui")
     assert resp.status_code == 200
