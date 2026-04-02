@@ -2246,6 +2246,15 @@
     }
   }
 
+  function resetIntro() {
+    try {
+      localStorage.removeItem(INTRO_SHOWN_KEY);
+      showIntroModal();
+    } catch (e) {
+      console.error("Failed to reset intro:", e);
+    }
+  }
+
   const SESSION = {
     selectedTask: "easy_missing_and_dupes",
     runs: loadLeaderboardRuns(),
@@ -2949,9 +2958,11 @@
     // Load and render persisted leaderboard
     await refreshFromServer();
     
-    // Show intro modal on first visit
+    // Show intro modal on page load if not disabled by user
     if (!hasSeenIntro()) {
-      showIntroModal();
+      setTimeout(() => {
+        showIntroModal();
+      }, 500);
     }
   });
 </script>
