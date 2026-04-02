@@ -1,0 +1,412 @@
+{
+  "results": {
+    "easy_missing_and_dupes": {
+      "good_policy": {
+        "cumulative_reward": 0.36,
+        "final_score": 0.24444444444444444,
+        "evaluation": {
+          "schema_version": "1.0.0",
+          "decision": "approved",
+          "gates": [
+            {
+              "name": "min_final_score",
+              "passed": true,
+              "actual": 0.24444444444444444,
+              "expected": 0.2,
+              "comparator": ">=",
+              "reason": "Ensures task performance quality."
+            },
+            {
+              "name": "max_invalid_actions",
+              "passed": true,
+              "actual": 0.0,
+              "expected": 1.0,
+              "comparator": "<=",
+              "reason": "Limits invalid operational behavior."
+            },
+            {
+              "name": "max_risk_score",
+              "passed": true,
+              "actual": 45.0,
+              "expected": 70.0,
+              "comparator": "<=",
+              "reason": "Controls governance risk ceiling."
+            },
+            {
+              "name": "min_issue_reduction_ratio",
+              "passed": true,
+              "actual": 0.4444444444444444,
+              "expected": 0.35,
+              "comparator": ">=",
+              "reason": "Requires meaningful data quality improvement."
+            }
+          ],
+          "failed_gates": [],
+          "thresholds": {
+            "min_final_score": 0.2,
+            "max_invalid_actions": 1.0,
+            "max_risk_score": 70.0,
+            "min_issue_reduction_ratio": 0.35
+          },
+          "metrics": {
+            "final_score": 0.24444444444444444,
+            "issue_reduction_ratio": 0.4444444444444444,
+            "max_risk_score": 45.0,
+            "invalid_action_count": 0.0,
+            "composite_score": 0.315
+          },
+          "leaderboard_record": {
+            "task_id": "easy_missing_and_dupes",
+            "difficulty": "easy",
+            "final_score": 0.24444444444444444,
+            "composite_score": 0.315,
+            "decision": "approved",
+            "max_risk_score": 45.0,
+            "invalid_action_count": 0.0
+          }
+        }
+      },
+      "bad_policy": {
+        "cumulative_reward": -0.42,
+        "final_score": 0.06666666666666668,
+        "evaluation": {
+          "schema_version": "1.0.0",
+          "decision": "rejected",
+          "gates": [
+            {
+              "name": "min_final_score",
+              "passed": false,
+              "actual": 0.06666666666666668,
+              "expected": 0.2,
+              "comparator": ">=",
+              "reason": "Ensures task performance quality."
+            },
+            {
+              "name": "max_invalid_actions",
+              "passed": false,
+              "actual": 5.0,
+              "expected": 1.0,
+              "comparator": "<=",
+              "reason": "Limits invalid operational behavior."
+            },
+            {
+              "name": "max_risk_score",
+              "passed": true,
+              "actual": 55.0,
+              "expected": 70.0,
+              "comparator": "<=",
+              "reason": "Controls governance risk ceiling."
+            },
+            {
+              "name": "min_issue_reduction_ratio",
+              "passed": false,
+              "actual": 0.0,
+              "expected": 0.35,
+              "comparator": ">=",
+              "reason": "Requires meaningful data quality improvement."
+            }
+          ],
+          "failed_gates": [
+            "min_final_score",
+            "max_invalid_actions",
+            "min_issue_reduction_ratio"
+          ],
+          "thresholds": {
+            "min_final_score": 0.2,
+            "max_invalid_actions": 1.0,
+            "max_risk_score": 70.0,
+            "min_issue_reduction_ratio": 0.35
+          },
+          "metrics": {
+            "final_score": 0.06666666666666668,
+            "issue_reduction_ratio": 0.0,
+            "max_risk_score": 55.0,
+            "invalid_action_count": 5.0,
+            "composite_score": 0.09166666666666667
+          },
+          "leaderboard_record": {
+            "task_id": "easy_missing_and_dupes",
+            "difficulty": "easy",
+            "final_score": 0.06666666666666668,
+            "composite_score": 0.09166666666666667,
+            "decision": "rejected",
+            "max_risk_score": 55.0,
+            "invalid_action_count": 5.0
+          }
+        }
+      }
+    },
+    "medium_type_and_category": {
+      "good_policy": {
+        "cumulative_reward": 1.0399999999999998,
+        "final_score": 0.325974025974026,
+        "evaluation": {
+          "schema_version": "1.0.0",
+          "decision": "approved",
+          "gates": [
+            {
+              "name": "min_final_score",
+              "passed": true,
+              "actual": 0.325974025974026,
+              "expected": 0.26,
+              "comparator": ">=",
+              "reason": "Ensures task performance quality."
+            },
+            {
+              "name": "max_invalid_actions",
+              "passed": true,
+              "actual": 0.0,
+              "expected": 1.0,
+              "comparator": "<=",
+              "reason": "Limits invalid operational behavior."
+            },
+            {
+              "name": "max_risk_score",
+              "passed": true,
+              "actual": 45.0,
+              "expected": 65.0,
+              "comparator": "<=",
+              "reason": "Controls governance risk ceiling."
+            },
+            {
+              "name": "min_issue_reduction_ratio",
+              "passed": true,
+              "actual": 0.5277777777777778,
+              "expected": 0.3,
+              "comparator": ">=",
+              "reason": "Requires meaningful data quality improvement."
+            }
+          ],
+          "failed_gates": [],
+          "thresholds": {
+            "min_final_score": 0.26,
+            "max_invalid_actions": 1.0,
+            "max_risk_score": 65.0,
+            "min_issue_reduction_ratio": 0.3
+          },
+          "metrics": {
+            "final_score": 0.325974025974026,
+            "issue_reduction_ratio": 0.5277777777777778,
+            "max_risk_score": 45.0,
+            "invalid_action_count": 0.0,
+            "composite_score": 0.38873737373737377
+          },
+          "leaderboard_record": {
+            "task_id": "medium_type_and_category",
+            "difficulty": "medium",
+            "final_score": 0.325974025974026,
+            "composite_score": 0.38873737373737377,
+            "decision": "approved",
+            "max_risk_score": 45.0,
+            "invalid_action_count": 0.0
+          }
+        }
+      },
+      "bad_policy": {
+        "cumulative_reward": -0.41000000000000003,
+        "final_score": 0.09090909090909093,
+        "evaluation": {
+          "schema_version": "1.0.0",
+          "decision": "rejected",
+          "gates": [
+            {
+              "name": "min_final_score",
+              "passed": false,
+              "actual": 0.09090909090909093,
+              "expected": 0.26,
+              "comparator": ">=",
+              "reason": "Ensures task performance quality."
+            },
+            {
+              "name": "max_invalid_actions",
+              "passed": false,
+              "actual": 5.0,
+              "expected": 1.0,
+              "comparator": "<=",
+              "reason": "Limits invalid operational behavior."
+            },
+            {
+              "name": "max_risk_score",
+              "passed": true,
+              "actual": 55.0,
+              "expected": 65.0,
+              "comparator": "<=",
+              "reason": "Controls governance risk ceiling."
+            },
+            {
+              "name": "min_issue_reduction_ratio",
+              "passed": false,
+              "actual": 0.0,
+              "expected": 0.3,
+              "comparator": ">=",
+              "reason": "Requires meaningful data quality improvement."
+            }
+          ],
+          "failed_gates": [
+            "min_final_score",
+            "max_invalid_actions",
+            "min_issue_reduction_ratio"
+          ],
+          "thresholds": {
+            "min_final_score": 0.26,
+            "max_invalid_actions": 1.0,
+            "max_risk_score": 65.0,
+            "min_issue_reduction_ratio": 0.3
+          },
+          "metrics": {
+            "final_score": 0.09090909090909093,
+            "issue_reduction_ratio": 0.0,
+            "max_risk_score": 55.0,
+            "invalid_action_count": 5.0,
+            "composite_score": 0.10863636363636364
+          },
+          "leaderboard_record": {
+            "task_id": "medium_type_and_category",
+            "difficulty": "medium",
+            "final_score": 0.09090909090909093,
+            "composite_score": 0.10863636363636364,
+            "decision": "rejected",
+            "max_risk_score": 55.0,
+            "invalid_action_count": 5.0
+          }
+        }
+      }
+    },
+    "hard_conflicts_and_budget": {
+      "good_policy": {
+        "cumulative_reward": 1.03,
+        "final_score": 0.20379310344827584,
+        "evaluation": {
+          "schema_version": "1.0.0",
+          "decision": "approved",
+          "gates": [
+            {
+              "name": "min_final_score",
+              "passed": true,
+              "actual": 0.20379310344827584,
+              "expected": 0.18,
+              "comparator": ">=",
+              "reason": "Ensures task performance quality."
+            },
+            {
+              "name": "max_invalid_actions",
+              "passed": true,
+              "actual": 0.0,
+              "expected": 2.0,
+              "comparator": "<=",
+              "reason": "Limits invalid operational behavior."
+            },
+            {
+              "name": "max_risk_score",
+              "passed": true,
+              "actual": 45.0,
+              "expected": 70.0,
+              "comparator": "<=",
+              "reason": "Controls governance risk ceiling."
+            },
+            {
+              "name": "min_issue_reduction_ratio",
+              "passed": true,
+              "actual": 0.3114754098360656,
+              "expected": 0.25,
+              "comparator": ">=",
+              "reason": "Requires meaningful data quality improvement."
+            }
+          ],
+          "failed_gates": [],
+          "thresholds": {
+            "min_final_score": 0.18,
+            "max_invalid_actions": 2.0,
+            "max_risk_score": 70.0,
+            "min_issue_reduction_ratio": 0.25
+          },
+          "metrics": {
+            "final_score": 0.20379310344827584,
+            "issue_reduction_ratio": 0.3114754098360656,
+            "max_risk_score": 45.0,
+            "invalid_action_count": 0.0,
+            "composite_score": 0.2599502543810062
+          },
+          "leaderboard_record": {
+            "task_id": "hard_conflicts_and_budget",
+            "difficulty": "hard",
+            "final_score": 0.20379310344827584,
+            "composite_score": 0.2599502543810062,
+            "decision": "approved",
+            "max_risk_score": 45.0,
+            "invalid_action_count": 0.0
+          }
+        }
+      },
+      "bad_policy": {
+        "cumulative_reward": -0.41000000000000003,
+        "final_score": 0.08000000000000002,
+        "evaluation": {
+          "schema_version": "1.0.0",
+          "decision": "rejected",
+          "gates": [
+            {
+              "name": "min_final_score",
+              "passed": false,
+              "actual": 0.08000000000000002,
+              "expected": 0.18,
+              "comparator": ">=",
+              "reason": "Ensures task performance quality."
+            },
+            {
+              "name": "max_invalid_actions",
+              "passed": false,
+              "actual": 5.0,
+              "expected": 2.0,
+              "comparator": "<=",
+              "reason": "Limits invalid operational behavior."
+            },
+            {
+              "name": "max_risk_score",
+              "passed": true,
+              "actual": 55.0,
+              "expected": 70.0,
+              "comparator": "<=",
+              "reason": "Controls governance risk ceiling."
+            },
+            {
+              "name": "min_issue_reduction_ratio",
+              "passed": false,
+              "actual": 0.0,
+              "expected": 0.25,
+              "comparator": ">=",
+              "reason": "Requires meaningful data quality improvement."
+            }
+          ],
+          "failed_gates": [
+            "min_final_score",
+            "max_invalid_actions",
+            "min_issue_reduction_ratio"
+          ],
+          "thresholds": {
+            "min_final_score": 0.18,
+            "max_invalid_actions": 2.0,
+            "max_risk_score": 70.0,
+            "min_issue_reduction_ratio": 0.25
+          },
+          "metrics": {
+            "final_score": 0.08000000000000002,
+            "issue_reduction_ratio": 0.0,
+            "max_risk_score": 55.0,
+            "invalid_action_count": 5.0,
+            "composite_score": 0.101
+          },
+          "leaderboard_record": {
+            "task_id": "hard_conflicts_and_budget",
+            "difficulty": "hard",
+            "final_score": 0.08000000000000002,
+            "composite_score": 0.101,
+            "decision": "rejected",
+            "max_risk_score": 55.0,
+            "invalid_action_count": 5.0
+          }
+        }
+      }
+    }
+  }
+}

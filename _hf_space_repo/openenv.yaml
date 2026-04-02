@@ -1,0 +1,20 @@
+name: data-quality-triage-assistant
+version: 0.1.0
+description: >-
+  A real-world data analysis OpenEnv where agents perform data quality triage
+  through cleaning, validation, and submission workflows.
+entrypoint: env.environment:DataQualityTriageEnv
+author: data_ana
+license: mit
+tags:
+  - openenv
+  - data-analysis
+  - data-cleaning
+observation_model: env.models:Observation
+action_model: env.models:Action
+reward_model: env.models:Reward
+default_task: easy_missing_and_dupes
+tasks:
+  - easy_missing_and_dupes
+  - medium_type_and_category
+  - hard_conflicts_and_budget
