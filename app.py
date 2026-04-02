@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from env.environment import DataQualityTriageEnv
 from env.models import Action
 
-app = FastAPI(title="Data Quality Triage Assistant", version="0.1.0")
+app = FastAPI(title="Data Quality Triage Assistant - #TEAM Hack-with-Pals", version="0.1.0")
 UI_FILE = Path(__file__).resolve().parent / "dataqa_bench_ui_spec.html"
 
 _env = DataQualityTriageEnv(task_id="easy_missing_and_dupes")

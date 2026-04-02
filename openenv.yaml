@@ -2,9 +2,10 @@ name: data-quality-triage-assistant
 version: 0.1.0
 description: >-
   A real-world data analysis OpenEnv where agents perform data quality triage
-  through cleaning, validation, and submission workflows.
+  through cleaning, validation, and submission workflows. Made by #TEAM
+  Hack-with-Pals.
 entrypoint: env.environment:DataQualityTriageEnv
-author: data_ana
+author: "#TEAM Hack-with-Pals"
 license: mit
 tags:
   - openenv

@@ -1345,10 +1345,26 @@
   .intro-modal-actions .btn:hover {
     transform: translateY(-1px);
   }
+
+  .team-watermark {
+    position: fixed;
+    right: 14px;
+    bottom: 10px;
+    z-index: 1200;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 9px;
+    box-shadow: var(--shadow);
+  }
 </style>
 </head>
 <body>
 <div class="app-shell">
+  <div class="team-watermark">Made by #TEAM Hack-with-Pals</div>
 
   <!-- SIDEBAR -->
   <nav class="sidebar">
@@ -1363,7 +1379,7 @@
       </div>
       <div>
         <div class="logo-text">DataQA Bench</div>
-        <div class="logo-sub">v1.0 · Evaluation</div>
+        <div class="logo-sub">Made by #TEAM Hack-with-Pals</div>
       </div>
     </div>
 
@@ -1404,8 +1420,8 @@
       <div class="user-row">
         <div class="user-avatar">RS</div>
         <div>
-          <div class="user-name">R. Sharma</div>
-          <div class="user-role">ML Researcher</div>
+          <div class="user-name">#TEAM Hack-with-Pals</div>
+          <div class="user-role">Official Project Team</div>
         </div>
       </div>
     </div>
@@ -2163,6 +2179,7 @@
     <div class="intro-modal-head">
       <div class="intro-modal-title">DataQA Triage Assistant</div>
       <div class="intro-modal-subtitle">Master data quality through progressive challenges</div>
+      <div class="intro-modal-subtitle" style="margin-top:4px">Made by #TEAM Hack-with-Pals</div>
     </div>
     <div class="intro-modal-body">
       <div class="intro-description">
@@ -3007,7 +3024,7 @@
 
     const titles = {
       runner: ['Agent Runner', 'hard_conflicts_and_budget · Step 7 of 80'],
-      dashboard: ['Overview', 'DataQA Bench · Data Quality Triage'],
+      dashboard: ['Overview', 'DataQA Bench · Data Quality Triage · #TEAM Hack-with-Pals'],
       dataset: ['Dataset Inspector', 'hard_conflicts_and_budget.json · 3,000 rows'],
       governance: ['Governance', 'run_1284 · gpt-4o · Risk & Audit Gates'],
       leaderboard: ['Leaderboard', 'All tasks · 1,284 evaluation runs'],
