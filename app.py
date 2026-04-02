@@ -74,9 +74,10 @@ def health() -> Dict[str, str]:
 
 
 @app.post("/reset")
-def reset(req: ResetRequest) -> Dict[str, Any]:
+def reset(req: ResetRequest | None = None) -> Dict[str, Any]:
     global _env
-    _env = DataQualityTriageEnv(task_id=req.task_id)
+    task_id = req.task_id if req else "easy_missing_and_dupes"
+    _env = DataQualityTriageEnv(task_id=task_id)
     obs = _env.reset()
     return obs.model_dump()
 
