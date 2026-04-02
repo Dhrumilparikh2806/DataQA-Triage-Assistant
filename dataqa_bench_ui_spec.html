@@ -275,30 +275,44 @@
 
   .level-selector-controls {
     display: flex;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
+    margin-left: auto;
   }
 
-  .level-selector-btn {
-    padding: 8px 16px;
+  .level-selector-dropdown {
+    padding: 10px 14px;
     border: 1px solid var(--border);
     border-radius: 6px;
     background: var(--surface);
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     transition: all 0.2s ease;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--text-primary);
+    min-width: 200px;
   }
 
-  .level-selector-btn:hover {
+  .level-selector-dropdown:hover {
     border-color: var(--indigo);
     background: var(--indigo-soft);
   }
 
-  .level-selector-btn.selected {
-    background: var(--indigo);
-    color: white;
+  .level-selector-dropdown:focus {
+    outline: none;
     border-color: var(--indigo);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  .level-selector-dropdown option {
+    padding: 8px;
+    background: var(--surface);
+    color: var(--text-primary);
+  }
+
+  .level-selector-dropdown option:hover {
+    background: var(--indigo-soft);
   }
 
   /* ── TABS ── */
@@ -1415,11 +1429,14 @@
     </div>
 
     <div id="level-selector-bar" class="level-selector-bar">
-      <div class="level-selector-label">Select Level:</div>
+      <div class="level-selector-label">Challenge Level:</div>
       <div class="level-selector-controls">
-        <button class="level-selector-btn" onclick="selectLevelAndShowBriefing('easy_missing_and_dupes')">Easy</button>
-        <button class="level-selector-btn" onclick="selectLevelAndShowBriefing('medium_type_and_category')">Medium</button>
-        <button class="level-selector-btn" onclick="selectLevelAndShowBriefing('hard_conflicts_and_budget')">Hard</button>
+        <select id="level-selector-dropdown" class="level-selector-dropdown" onchange="handleLevelChange(this.value)">
+          <option value="">No Level Selected</option>
+          <option value="easy_missing_and_dupes">Easy - Missing Values & Duplicates</option>
+          <option value="medium_type_and_category">Medium - Type Errors & Category Drift</option>
+          <option value="hard_conflicts_and_budget">Hard - Conflicts & Budget Constraints</option>
+        </select>
       </div>
     </div>
     <div class="content-area level-not-selected">
@@ -2416,39 +2433,21 @@
     }
   }
 
-  function selectLevelAndShowBriefing(taskId) {
+  function handleLevelChange(taskId) {
+    if (!taskId) {
+      console.log("No level selected");
+      return;
+    }
     SESSION.selectedTask = taskId;
     SESSION.pendingLevelStartTask = taskId;
     setTaskById(taskId, false);
     openLevelBriefing(taskId);
   }
 
-  function showLevelSelectorBar() {
-    const bar = document.getElementById("level-selector-bar");
-    if (bar) {
-      bar.style.display = "flex";
-    }
-  }
-
-  function hideLevelSelectorBar() {
-    const bar = document.getElementById("level-selector-bar");
-    if (bar) {
-      bar.style.display = "none";
-    }
-  }
-
-  function updateLevelSelectorButton(taskId) {
-    document.querySelectorAll(".level-selector-btn").forEach(btn => {
-      btn.classList.remove("selected");
-    });
-    const taskMap = {
-      easy_missing_and_dupes: 0,
-      medium_type_and_category: 1,
-      hard_conflicts_and_budget: 2
-    };
-    const buttons = document.querySelectorAll(".level-selector-btn");
-    if (buttons[taskMap[taskId]]) {
-      buttons[taskMap[taskId]].classList.add("selected");
+  function updateLevelSelectorDropdown(taskId) {
+    const dropdown = document.getElementById("level-selector-dropdown");
+    if (dropdown) {
+      dropdown.value = taskId || "";
     }
   }
 
@@ -2456,8 +2455,7 @@
     const backdrop = document.getElementById("intro-backdrop");
     if (backdrop) {
       backdrop.classList.remove("open");
-      showLevelSelectorBar();
-      updateLevelSelectorButton(SESSION.selectedTask);
+      updateLevelSelectorDropdown("");
     }
   }
 
@@ -2473,7 +2471,7 @@
     closeIntroModal();
     SESSION.selectedTask = taskId;
     setTaskById(taskId, false);
-    updateLevelSelectorButton(taskId);
+    updateLevelSelectorDropdown(taskId);
     setTimeout(() => {
       openLevelBriefing(taskId);
     }, 100);
@@ -3057,9 +3055,8 @@
     // Load and display all content
     refreshFromServer().catch(err => console.error("Error loading data:", err));
     
-    // Show level selector bar
-    showLevelSelectorBar();
-    updateLevelSelectorButton(SESSION.selectedTask);
+    // Show level selector dropdown - reset to no selection
+    updateLevelSelectorDropdown("");
     
     // Show intro modal on page load
     const backdrop = document.getElementById("intro-backdrop");
