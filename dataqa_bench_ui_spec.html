@@ -1668,6 +1668,11 @@
         </div>
       </div>
 
+      <!-- ── AGENT RUNNER ── -->
+      <div id="screen-runner" class="screen active">
+        <div class="runner-layout">
+          <div>
+            <div class="card" style="margin-bottom:16px">
               <div class="card-header">
                 <div class="card-title">Playground</div>
                 <div class="card-sub">Step · Reset · Get state</div>
@@ -3112,9 +3117,13 @@
       return;
     }
 
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s => {
+      s.classList.remove('active');
+      s.style.display = 'none';
+    });
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     target.classList.add('active');
+    target.style.display = 'block';
 
     const titles = {
       runner: ['Agent Runner', 'hard_conflicts_and_budget · Step 7 of 80'],
@@ -3150,7 +3159,7 @@
   }
 
   window.addEventListener("load", () => {
-    ensureVisibleScreen("runner");
+    showScreen("runner");
     updateTaskIndicators();
     renderTaskLibrary();
     renderApiSettings({
