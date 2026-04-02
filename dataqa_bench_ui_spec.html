@@ -2361,7 +2361,6 @@
     const backdrop = document.getElementById("intro-backdrop");
     if (backdrop) {
       backdrop.classList.remove("open");
-      markIntroAsSeen();
     }
   }
 
@@ -2958,12 +2957,17 @@
     // Load and render persisted leaderboard
     await refreshFromServer();
     
-    // Show intro modal on page load if not disabled by user
-    if (!hasSeenIntro()) {
-      setTimeout(() => {
-        showIntroModal();
-      }, 500);
-    }
+    // Show intro modal on page load
+    setTimeout(() => {
+      console.log("Opening intro modal...");
+      const backdrop = document.getElementById("intro-backdrop");
+      if (backdrop) {
+        backdrop.classList.add("open");
+        console.log("Intro modal opened successfully");
+      } else {
+        console.warn("Intro backdrop element not found");
+      }
+    }, 300);
   });
 </script>
 </body>
