@@ -2941,7 +2941,7 @@
     setTaskById(taskId, true);
   }
 
-  window.addEventListener("load", async () => {
+  window.addEventListener("load", () => {
     ensureVisibleScreen("runner");
     updateTaskIndicators();
     renderTaskLibrary();
@@ -2954,20 +2954,17 @@
     setPlaygroundStatus("ready", "ok");
     updatePlaygroundMeta({ action: "none", step: 0, submitted: false });
     
-    // Load and render persisted leaderboard
-    await refreshFromServer();
+    // Show intro modal immediately on page load
+    const backdrop = document.getElementById("intro-backdrop");
+    if (backdrop) {
+      backdrop.classList.add("open");
+      console.log("✓ Intro modal displayed");
+    } else {
+      console.error("✗ Intro backdrop element not found");
+    }
     
-    // Show intro modal on page load
-    setTimeout(() => {
-      console.log("Opening intro modal...");
-      const backdrop = document.getElementById("intro-backdrop");
-      if (backdrop) {
-        backdrop.classList.add("open");
-        console.log("Intro modal opened successfully");
-      } else {
-        console.warn("Intro backdrop element not found");
-      }
-    }, 300);
+    // Load leaderboard data in background
+    refreshFromServer().catch(err => console.error("Error loading data:", err));
   });
 </script>
 </body>
