@@ -1,1 +1,1 @@
-"""Data Quality Triage Assistant package marker."""
+"""Data Quality Triage Assistant package root."""

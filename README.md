@@ -25,11 +25,12 @@ Implemented:
 - deterministic step/reset/state API
 - easy/medium/hard task registry
 - deterministic reward and grader modules
-- baseline runner and test suite
+- CSV-backed fixtures with per-task schema constraints
+- OpenEnv validation and Hugging Face Space deployment
 
 Planned next:
-- full OpenEnv validator integration
-- Hugging Face Space deployment wiring
+- expand domain-specific constraints per task
+- add richer per-column profiling observations
 
 ## Environment API
 - reset() -> initial observation
@@ -99,13 +100,6 @@ Core files:
 - env/environment.py (evaluate_run)
 - app.py (/evaluate endpoint)
 
-Example CI usage:
-```bash
-python scripts/evaluate_all.py
-```
-
-The output includes per-policy evaluation decisions and failed gate names.
-
 ## Task Suite
 - easy_missing_and_dupes (easy)
 - medium_type_and_category (medium)
@@ -132,29 +126,29 @@ Grader: env/graders.py
 	- objective: maximize quality gains under strict step budget with non-zero target tolerances.
 	- challenge profile: constrained planning with tradeoffs.
 
-## Baseline Scores (Current Scripted Baseline)
-- easy_missing_and_dupes: 0.2444444444
-- medium_type_and_category: 0.3259740260
-- hard_conflicts_and_budget: 0.2037931034
-- aggregate_score: 0.2580705246
-
-Scores source: scripts/baseline_results.json
+## Baseline Runtime
+Use the required `inference.py` script for baseline/runtime checks.
 
 ## Quick Start
 ```bash
 pip install -r requirements.txt
-pytest -q
-python scripts/run_baseline.py
-python scripts/validate_project.py
+openenv validate
+python inference.py
 ```
 
 ## OpenAI Baseline Mode
-If OPENAI_API_KEY is set, scripts/run_baseline.py runs an OpenAI model policy.
+`inference.py` uses the OpenAI client with these variables:
+
+- API_BASE_URL
+- MODEL_NAME
+- HF_TOKEN
 
 Optional environment variable:
-- OPENAI_MODEL (default: gpt-4.1-mini)
+- API_KEY (fallback if HF_TOKEN is not set)
 
-Without OPENAI_API_KEY, the script uses a deterministic scripted baseline.
+Defaults:
+- API_BASE_URL: https://router.huggingface.co/v1
+- MODEL_NAME: Qwen/Qwen2.5-72B-Instruct
 
 ## Docker
 ```bash
@@ -167,14 +161,7 @@ docker run --rm -p 7860:7860 data-quality-openenv
 2. Push this repository content to the Space.
 3. Ensure README front matter includes sdk: docker and app_port: 7860.
 4. Add Space topic/tag openenv.
-5. Set OPENAI_API_KEY in Space secrets if running LLM baseline mode.
-
-## Evaluation Utilities
-```bash
-python scripts/evaluate_all.py
-```
-
-This compares good and bad trajectories and stores results in scripts/trajectory_eval_results.json.
+5. Set HF_TOKEN in Space secrets for inference runtime.
 
 ## API Endpoints
 - GET /health
@@ -185,14 +172,12 @@ This compares good and bad trajectories and stores results in scripts/trajectory
 - POST /evaluate
 
 ## Validation Note
-Local tests pass, but OpenEnv CLI validation currently depends on the correct validator binary/package for this runtime. Once the exact CLI distribution is finalized, run:
-
 ```bash
 openenv validate
 ```
 
-Until then, run the local project structure validator:
+For inference runtime validation:
 
 ```bash
-python scripts/validate_project.py
+python inference.py
 ```
