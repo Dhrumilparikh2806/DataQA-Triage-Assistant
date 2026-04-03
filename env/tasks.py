@@ -115,7 +115,7 @@ TASKS: Dict[str, TaskDefinition] = {
         schema_constraints={
             "required_columns": ["order_id", "amount", "region", "timestamp"],
             "allowed_regions": ["North", "South", "East", "West"],
-            "amount_min": 0.0,
+            "amount_min": -5000.0,
             "amount_max": 5000.0,
             "require_unique_order_id": True,
             "require_valid_timestamps": True,

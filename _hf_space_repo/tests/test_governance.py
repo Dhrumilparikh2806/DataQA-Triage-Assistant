@@ -20,8 +20,7 @@ def test_generate_run_report_contains_audit_sections() -> None:
 
     actions = [
         Action(operation="inspect_schema"),
-        Action(operation="clean_missing", target_columns=["amount"]),
-        Action(operation="deduplicate"),
+        Action(operation="normalize_categories", target_columns=["region"]),
         Action(operation="validate_constraints"),
         Action(operation="submit"),
     ]

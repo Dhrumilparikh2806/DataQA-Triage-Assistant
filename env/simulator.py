@@ -116,15 +116,6 @@ def _coerce_scalar(value: Any) -> Any:
     return str(value)
 
 
-def _looks_like_timestamp(value: Any) -> bool:
-    if not isinstance(value, str):
-        return False
-    text = value.strip()
-    if len(text) < 8:
-        return False
-    return any(token in text for token in ("-", "/", ":", "T"))
-
-
 def _canonicalize_hf_row(row: Dict[str, Any], index: int, column_map: Dict[str, tuple[str, ...]] | None = None) -> Dict[str, Any]:
     column_map = column_map or {}
     keys = list(row.keys())
@@ -157,11 +148,19 @@ def _canonicalize_hf_row(row: Dict[str, Any], index: int, column_map: Dict[str, 
         list(column_map.get("region", ())) + ["region", "country", "state", "city", "embarked", "class", "workclass", "occupation", "category", "native-country", "job", "education"],
         lambda key, value: isinstance(value, str) and len(str(value)) <= 24,
     )
-    timestamp = pick_value(
-        "timestamp",
-        list(column_map.get("timestamp", ())) + ["timestamp", "date", "datetime", "order_date", "created_at", "time", "day", "month"],
-        lambda key, value: _looks_like_timestamp(value),
-    )
+    timestamp = None
+    for candidate_name in list(column_map.get("timestamp", ())) + ["timestamp", "date", "datetime", "order_date", "created_at", "time", "day", "month"]:
+        if candidate_name not in lowered:
+            continue
+        value = row.get(lowered[candidate_name])
+        if isinstance(value, datetime):
+            timestamp = value.replace(microsecond=0).isoformat()
+            break
+        if isinstance(value, str) and len(value.strip()) >= 8:
+            parsed = _parse_timestamp(value)
+            if parsed is not None:
+                timestamp = parsed
+                break
 
     order_id = order_id if order_id not in (None, "") else _synthetic_order_id(row)
     amount = _coerce_scalar(amount)

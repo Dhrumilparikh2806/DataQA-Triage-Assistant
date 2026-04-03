@@ -29,8 +29,7 @@ def test_evaluator_approves_good_trajectory() -> None:
 
     actions = [
         Action(operation="inspect_schema"),
-        Action(operation="clean_missing", target_columns=["amount"]),
-        Action(operation="deduplicate"),
+        Action(operation="normalize_categories", target_columns=["region"]),
         Action(operation="validate_constraints"),
         Action(operation="submit"),
     ]

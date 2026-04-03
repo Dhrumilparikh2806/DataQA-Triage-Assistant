@@ -2233,12 +2233,13 @@
       color: "#065f46",
       bg: "var(--emerald-soft)",
       border: "#a7f3d0",
-      budget: 40,
-      label: "Missing Values & Duplicates",
-      objective: "Clean null entries and remove duplicate records while preserving valid rows.",
-      workflow: "Inspect schema, clean missing values, deduplicate with stable keys, then validate before submit.",
-      actions: ["inspect_schema", "clean_missing", "deduplicate", "validate_constraints"],
-      cautions: "Avoid over-cleaning low-risk columns. Submit only after validation passes.",
+      budget: 8,
+      label: "Category Drift Triage",
+      objective: "Resolve category inconsistency from real dataset mappings and submit a validated run.",
+      workflow: "Inspect schema, normalize categories on region, validate constraints, then submit.",
+      actions: ["inspect_schema", "normalize_categories", "validate_constraints", "submit"],
+      target_quality_report: { missing_values: 0, duplicates: 0, invalid_types: 0, category_inconsistency: 0, outliers: 0 },
+      cautions: "Avoid low-impact cleaning actions when missing and duplicates are already at target.",
     },
     medium_type_and_category: {
       level: "Medium",
@@ -2246,12 +2247,13 @@
       color: "#92400e",
       bg: "var(--amber-soft)",
       border: "#fcd34d",
-      budget: 60,
+      budget: 10,
       label: "Type Errors & Category Drift",
-      objective: "Fix type mismatches and normalize inconsistent category values.",
-      workflow: "Profile affected columns, cast types safely, normalize categories, validate constraints, then submit.",
-      actions: ["inspect_schema", "cast_type", "normalize_categories", "validate_constraints"],
-      cautions: "Prevent destructive casting and keep category mappings consistent.",
+      objective: "Prioritize category normalization for real dataset drift and finish within a tighter budget.",
+      workflow: "Inspect schema, normalize categories, validate constraints, then submit.",
+      actions: ["inspect_schema", "normalize_categories", "validate_constraints", "submit"],
+      target_quality_report: { missing_values: 0, duplicates: 0, invalid_types: 0, category_inconsistency: 0, outliers: 1 },
+      cautions: "Skip unnecessary casts unless invalid type issues are nonzero in the live quality report.",
     },
     hard_conflicts_and_budget: {
       level: "Hard",
@@ -2259,12 +2261,13 @@
       color: "#be123c",
       bg: "var(--rose-soft)",
       border: "#fecdd3",
-      budget: 80,
+      budget: 12,
       label: "Conflicts & Budget Constraints",
-      objective: "Resolve source conflicts and outliers under a strict step budget.",
-      workflow: "Prioritize high-impact columns, normalize conflicts, cap outliers, validate frequently, then submit.",
-      actions: ["inspect_schema", "normalize_categories", "cap_outliers", "validate_constraints"],
-      cautions: "Repeated low-value actions increase risk and can fail governance gates.",
+      objective: "Resolve high category drift plus outliers while preserving budget for validation and submit.",
+      workflow: "Inspect schema, normalize categories, cap outliers, validate constraints, then submit.",
+      actions: ["inspect_schema", "normalize_categories", "cap_outliers", "validate_constraints", "submit"],
+      target_quality_report: { missing_values: 1, duplicates: 0, invalid_types: 0, category_inconsistency: 0, outliers: 2 },
+      cautions: "Every extra action can trigger efficiency penalties, so prefer only quality-improving steps.",
     },
   };
 
@@ -2771,23 +2774,23 @@
       {
         id: "easy_missing_and_dupes",
         label: "Easy",
-        defects: 12,
-        budget: 40,
-        detail: "Fix null values and deduplicate rows by key.",
+        defects: 200,
+        budget: 8,
+        detail: "Category normalization focused on real-dataset mapped regions.",
       },
       {
         id: "medium_type_and_category",
         label: "Medium",
-        defects: 28,
-        budget: 60,
-        detail: "Resolve type casting and category normalization issues.",
+        defects: 537,
+        budget: 10,
+        detail: "High category drift with strict efficiency constraints.",
       },
       {
         id: "hard_conflicts_and_budget",
         label: "Hard",
-        defects: 54,
-        budget: 80,
-        detail: "Handle source conflicts and outliers under strict budget.",
+        defects: 997,
+        budget: 12,
+        detail: "Category drift plus outliers under governance pressure.",
       },
     ];
     const list = document.getElementById("task-library-list");
@@ -2932,45 +2935,48 @@
   }
 
   async function runSuggestedPlan() {
-    const plans = {
-      easy_missing_and_dupes: [
-        ["inspect_schema", []],
-        ["clean_missing", ["amount"]],
-        ["deduplicate", []],
-        ["validate_constraints", []],
-        ["submit", []],
-      ],
-      medium_type_and_category: [
-        ["inspect_schema", []],
-        ["profile_column", ["amount"]],
-        ["clean_missing", ["amount"]],
-        ["deduplicate", []],
-        ["cast_type", ["amount"]],
-        ["normalize_categories", ["region"]],
-        ["cap_outliers", ["amount"]],
-        ["validate_constraints", []],
-        ["submit", []],
-      ],
-      hard_conflicts_and_budget: [
-        ["inspect_schema", []],
-        ["profile_column", ["amount"]],
-        ["clean_missing", ["amount"]],
-        ["deduplicate", []],
-        ["cast_type", ["amount"]],
-        ["normalize_categories", ["region"]],
-        ["cap_outliers", ["amount"]],
-        ["validate_constraints", []],
-        ["submit", []],
-      ],
-    };
-    const plan = plans[SESSION.selectedTask] || plans.easy_missing_and_dupes;
-    appendStepLog("auto_plan()", `→ executing ${plan.length} planned actions`, "ok");
+    const state = await api("/state");
+    const quality = state.quality_report || {};
+    const targets = getTaskMeta(state.task_id || SESSION.selectedTask);
+    const plan = [["inspect_schema", []]];
+
+    if ((quality.missing_values || 0) > (targets.target_quality_report?.missing_values ?? 0)) {
+      plan.push(["clean_missing", ["*"]]);
+    }
+    if ((quality.duplicates || 0) > (targets.target_quality_report?.duplicates ?? 0)) {
+      plan.push(["deduplicate", ["*"]]);
+    }
+    if ((quality.invalid_types || 0) > (targets.target_quality_report?.invalid_types ?? 0)) {
+      plan.push(["cast_type", ["*"]]);
+    }
+    if ((quality.category_inconsistency || 0) > (targets.target_quality_report?.category_inconsistency ?? 0)) {
+      plan.push(["normalize_categories", ["region"]]);
+    }
+    if ((quality.outliers || 0) > (targets.target_quality_report?.outliers ?? 0)) {
+      plan.push(["cap_outliers", ["amount"]]);
+    }
+
+    plan.push(["validate_constraints", []]);
+
+    appendStepLog("auto_plan()", `→ executing ${plan.length} quality-aware actions`, "ok");
     for (const [operation, targetColumns] of plan) {
       const result = await runAction(operation, targetColumns);
-      if (!result || result.done) {
+      if (!result) {
+        break;
+      }
+      if (operation === "validate_constraints" && SESSION.lastReport?.episode?.validation_passed) {
+        await runAction("submit", []);
+        break;
+      }
+      if (result.done) {
         break;
       }
       await new Promise(resolve => setTimeout(resolve, 120));
+    }
+
+    if (!SESSION.lastReport?.episode?.validation_passed) {
+      appendStepLog("auto_plan()", "→ stopped before submit because validation is still failing", "warn");
+      setPlaygroundStatus("plan stopped before submit", "warn");
     }
   }
 

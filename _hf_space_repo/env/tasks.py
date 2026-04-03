@@ -19,11 +19,11 @@ TASKS: Dict[str, TaskDefinition] = {
         difficulty="easy",
         step_budget=8,
         initial_quality_report={
-            "missing_values": 12,
-            "duplicates": 5,
+            "missing_values": 0,
+            "duplicates": 0,
             "invalid_types": 0,
-            "category_inconsistency": 0,
-            "outliers": 1,
+            "category_inconsistency": 200,
+            "outliers": 0,
         },
         target_quality_report={
             "missing_values": 0,
@@ -57,7 +57,7 @@ TASKS: Dict[str, TaskDefinition] = {
         task_id="hard_conflicts_and_budget",
         dataset_id="finance_hard_v3",
         difficulty="hard",
-        step_budget=9,
+        step_budget=12,
         initial_quality_report={
             "missing_values": 17,
             "duplicates": 7,
