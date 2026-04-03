@@ -3045,45 +3045,48 @@
   }
 
   async function runSuggestedPlan() {
-    const plans = {
-      easy_missing_and_dupes: [
-        ["inspect_schema", []],
-        ["clean_missing", ["amount"]],
-        ["deduplicate", []],
-        ["validate_constraints", []],
-        ["submit", []],
-      ],
-      medium_type_and_category: [
-        ["inspect_schema", []],
-        ["profile_column", ["amount"]],
-        ["clean_missing", ["amount"]],
-        ["deduplicate", []],
-        ["cast_type", ["amount"]],
-        ["normalize_categories", ["region"]],
-        ["cap_outliers", ["amount"]],
-        ["validate_constraints", []],
-        ["submit", []],
-      ],
-      hard_conflicts_and_budget: [
-        ["inspect_schema", []],
-        ["profile_column", ["amount"]],
-        ["clean_missing", ["amount"]],
-        ["deduplicate", []],
-        ["cast_type", ["amount"]],
-        ["normalize_categories", ["region"]],
-        ["cap_outliers", ["amount"]],
-        ["validate_constraints", []],
-        ["submit", []],
-      ],
-    };
-    const plan = plans[SESSION.selectedTask] || plans.easy_missing_and_dupes;
-    appendStepLog("auto_plan()", `→ executing ${plan.length} planned actions`, "ok");
+    const state = await api("/state");
+    const quality = state.quality_report || {};
+    const targets = getTaskMeta(state.task_id || SESSION.selectedTask);
+    const plan = [["inspect_schema", []]];
+
+    if ((quality.missing_values || 0) > (targets.target_quality_report?.missing_values ?? 0)) {
+      plan.push(["clean_missing", ["*"]]);
+    }
+    if ((quality.duplicates || 0) > (targets.target_quality_report?.duplicates ?? 0)) {
+      plan.push(["deduplicate", ["*"]]);
+    }
+    if ((quality.invalid_types || 0) > (targets.target_quality_report?.invalid_types ?? 0)) {
+      plan.push(["cast_type", ["*"]]);
+    }
+    if ((quality.category_inconsistency || 0) > (targets.target_quality_report?.category_inconsistency ?? 0)) {
+      plan.push(["normalize_categories", ["region"]]);
+    }
+    if ((quality.outliers || 0) > (targets.target_quality_report?.outliers ?? 0)) {
+      plan.push(["cap_outliers", ["amount"]]);
+    }
+
+    plan.push(["validate_constraints", []]);
+
+    appendStepLog("auto_plan()", `→ executing ${plan.length} quality-aware actions`, "ok");
     for (const [operation, targetColumns] of plan) {
       const result = await runAction(operation, targetColumns);
-      if (!result || result.done) {
+      if (!result) {
+        break;
+      }
+      if (operation === "validate_constraints" && SESSION.lastReport?.episode?.validation_passed) {
+        await runAction("submit", []);
+        break;
+      }
+      if (result.done) {
         break;
       }
       await new Promise(resolve => setTimeout(resolve, 120));
+    }
+
+    if (!SESSION.lastReport?.episode?.validation_passed) {
+      appendStepLog("auto_plan()", "→ stopped before submit because validation is still failing", "warn");
+      setPlaygroundStatus("plan stopped before submit", "warn");
     }
   }
 
