@@ -72,6 +72,28 @@ def health() -> Dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/tasks")
+def tasks() -> Dict[str, Any]:
+    catalog = DataQualityTriageEnv.task_catalog()
+    return {
+        "task_count": len(catalog),
+        "tasks": catalog,
+        "task_graders": DataQualityTriageEnv.task_graders(),
+    }
+
+
+@app.get("/metadata")
+def metadata() -> Dict[str, Any]:
+    catalog = DataQualityTriageEnv.task_catalog()
+    return {
+        "name": "data-quality-triage-assistant",
+        "default_task": "easy_missing_and_dupes",
+        "task_count": len(catalog),
+        "tasks": catalog,
+        "task_graders": DataQualityTriageEnv.task_graders(),
+    }
+
+
 @app.post("/reset")
 def reset(req: ResetRequest | None = None) -> Dict[str, Any]:
     global _env

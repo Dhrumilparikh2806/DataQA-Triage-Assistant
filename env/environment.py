@@ -8,7 +8,7 @@ from .models import Action, EnvState, Observation, Reward
 from .rewards import compute_reward
 from .rubrics import DataQualityTriageRubric
 from .simulator import apply_action, build_task_dataset, compute_quality_report, validate_task_constraints
-from .tasks import get_task
+from .tasks import TASK_CONFIGS, get_task
 
 
 class DataQualityTriageEnv:
@@ -18,6 +18,14 @@ class DataQualityTriageEnv:
         self._state: EnvState | None = None
         self._dataset: list[dict[str, Any]] = []
         self.rubric = DataQualityTriageRubric()
+
+    @staticmethod
+    def task_catalog() -> list[dict[str, Any]]:
+        return deepcopy(TASK_CONFIGS)
+
+    @staticmethod
+    def task_graders() -> dict[str, str]:
+        return {entry["task_id"]: entry["grader"] for entry in TASK_CONFIGS}
 
     def reset(self) -> Observation:
         self._task = get_task(self.task_id)

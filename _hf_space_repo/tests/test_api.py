@@ -36,3 +36,19 @@ def test_invalid_action_is_penalized() -> None:
 
     assert info["invalid_action"] is True
     assert reward.safety_penalty >= 0.05
+
+
+def test_task_catalog_has_three_explicit_graded_tasks() -> None:
+    catalog = DataQualityTriageEnv.task_catalog()
+    assert len(catalog) >= 3
+    for item in catalog:
+        assert item["task_id"]
+        assert item["grader"].startswith("env.graders:")
+
+
+def test_task_grader_map_exposes_three_entries() -> None:
+    graders = DataQualityTriageEnv.task_graders()
+    assert len(graders) >= 3
+    assert "easy_missing_and_dupes" in graders
+    assert "medium_type_and_category" in graders
+    assert "hard_conflicts_and_budget" in graders
