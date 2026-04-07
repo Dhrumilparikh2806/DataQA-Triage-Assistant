@@ -46,12 +46,20 @@ def compute_reward(
             category_improvements[key] = delta
             weighted_improvement += delta * CATEGORY_WEIGHTS.get(key, 1.0)
 
-    quality_delta = 0.02 * improvement
-    progress_reward = 0.015 * weighted_improvement
+    # Normalize rewards for large real-world datasets
+    # Cap weighted_improvement to reasonable bounds (max ~60 for typical improvements)
+    IMPROVEMENT_CAP = 60.0
+    normalized_improvement = min(weighted_improvement, IMPROVEMENT_CAP)
+    improvement_ratio = (normalized_improvement / IMPROVEMENT_CAP) if IMPROVEMENT_CAP > 0 else 0.0
+
+    quality_delta = 0.015 * min(improvement, 40.0)  # Now max ~0.6
+    progress_reward = 0.01 * normalized_improvement  # Now max ~0.6
     alignment_bonus = 0.0
     aligned_category = ACTION_ALIGNMENT.get(operation)
     if aligned_category and category_improvements.get(aligned_category, 0.0) > 0:
-        alignment_bonus = 0.01 * category_improvements[aligned_category]
+        # Cap alignment bonus: max when improvement is 30+
+        aligned_improvement = min(category_improvements[aligned_category], 30.0)
+        alignment_bonus = 0.01 * aligned_improvement  # Now max ~0.3
 
     validation_bonus = 0.04 if operation == "validate_constraints" and validation_passed else 0.0
 

@@ -19,7 +19,11 @@ def compute_reward(
     after_total = float(sum(quality_after.values()))
     improvement = max(0.0, before_total - after_total)
 
-    quality_delta = 0.03 * improvement
+    # Normalize rewards for large real-world datasets
+    # Cap improvement to reasonable bounds (max ~30 for quality_delta)
+    capped_improvement = min(improvement, 30.0)
+    
+    quality_delta = 0.025 * capped_improvement  # Now max ~0.75 instead of unbounded
     efficiency_penalty = 0.01 if step_count > (step_budget * 0.7) else 0.0
     safety_penalty = 0.0
     if repeated_action:
