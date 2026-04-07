@@ -22,7 +22,14 @@ class TaskDefinition:
     hf_column_map: Dict[str, tuple[str, ...]] = field(default_factory=dict)
 
 
-TASKS: Dict[str, TaskDefinition] = {
+class TaskRegistry(dict[str, TaskDefinition]):
+    """Dictionary-like task registry that iterates over task definitions by default."""
+
+    def __iter__(self):
+        return iter(self.values())
+
+
+TASKS: TaskRegistry = TaskRegistry({
     "easy_missing_and_dupes": TaskDefinition(
         task_id="easy_missing_and_dupes",
         dataset_id="sales_small_v1",
@@ -141,7 +148,7 @@ TASKS: Dict[str, TaskDefinition] = {
             "region": ("job", "education"),
         },
     ),
-}
+})
 
 # Compatibility metadata for validators that scan Python modules directly.
 TASK_CONFIGS = [

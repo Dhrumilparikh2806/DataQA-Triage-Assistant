@@ -19,6 +19,12 @@ def test_each_task_has_explicit_grader() -> None:
         assert task.grader.startswith("env.graders:")
 
 
+def test_tasks_registry_iterates_over_task_objects() -> None:
+    iterated = list(TASKS)
+    assert len(iterated) == 3
+    assert all(hasattr(task, "grader") for task in iterated)
+
+
 def test_task_registry_exports_are_available() -> None:
     from env import GRADERS, TASK_CONFIGS, TASK_DEFINITIONS, TASKS as PACKAGE_TASKS, task_catalog, task_definitions, task_graders, tasks
 
