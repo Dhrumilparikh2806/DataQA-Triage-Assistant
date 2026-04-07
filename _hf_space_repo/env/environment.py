@@ -160,7 +160,7 @@ class DataQualityTriageEnv:
             validation_passed=state.validation_passed,
             submitted=state.submitted,
             step_count=state.step_count,
-        ) if done else 0.0
+        ) if done else 0.001
 
         info: Dict[str, Any] = {
             "reward_components": reward_components,

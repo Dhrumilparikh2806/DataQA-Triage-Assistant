@@ -1,6 +1,14 @@
-from typing import Dict
+from typing import Any, Dict
 
-from .tasks import TaskDefinition
+from .tasks import TaskDefinition, get_task
+
+def _extract_report(report: Dict[str, Any]):
+    task = get_task(report["task"]["task_id"])
+    quality_report = report["quality_outcome"]["final_quality_report"]
+    validation_passed = report["episode"]["validation_passed"]
+    submitted = report["episode"]["submitted"]
+    step_count = report["episode"]["step_count"]
+    return task, quality_report, validation_passed, submitted, step_count
 
 # Small epsilon to ensure scores stay strictly within (0, 1)
 EPSILON = 0.001
@@ -43,13 +51,16 @@ def grade_task(
 
 
 def grade_easy_missing_and_dupes(
+    report: Dict[str, Any] = None,
     *,
-    task: TaskDefinition,
-    quality_report: Dict[str, int],
-    validation_passed: bool,
-    submitted: bool,
-    step_count: int,
+    task: TaskDefinition = None,
+    quality_report: Dict[str, int] = None,
+    validation_passed: bool = None,
+    submitted: bool = None,
+    step_count: int = None,
 ) -> float:
+    if report is not None:
+        task, quality_report, validation_passed, submitted, step_count = _extract_report(report)
     return grade_task(
         task=task,
         quality_report=quality_report,
@@ -60,13 +71,16 @@ def grade_easy_missing_and_dupes(
 
 
 def grade_medium_type_and_category(
+    report: Dict[str, Any] = None,
     *,
-    task: TaskDefinition,
-    quality_report: Dict[str, int],
-    validation_passed: bool,
-    submitted: bool,
-    step_count: int,
+    task: TaskDefinition = None,
+    quality_report: Dict[str, int] = None,
+    validation_passed: bool = None,
+    submitted: bool = None,
+    step_count: int = None,
 ) -> float:
+    if report is not None:
+        task, quality_report, validation_passed, submitted, step_count = _extract_report(report)
     return grade_task(
         task=task,
         quality_report=quality_report,
@@ -77,13 +91,16 @@ def grade_medium_type_and_category(
 
 
 def grade_hard_conflicts_and_budget(
+    report: Dict[str, Any] = None,
     *,
-    task: TaskDefinition,
-    quality_report: Dict[str, int],
-    validation_passed: bool,
-    submitted: bool,
-    step_count: int,
+    task: TaskDefinition = None,
+    quality_report: Dict[str, int] = None,
+    validation_passed: bool = None,
+    submitted: bool = None,
+    step_count: int = None,
 ) -> float:
+    if report is not None:
+        task, quality_report, validation_passed, submitted, step_count = _extract_report(report)
     return grade_task(
         task=task,
         quality_report=quality_report,

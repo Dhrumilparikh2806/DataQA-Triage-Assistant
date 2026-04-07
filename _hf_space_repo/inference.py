@@ -186,7 +186,7 @@ def main() -> None:
     rewards: List[float] = []
     steps_taken = 0
     success = False
-    final_score = 0.0
+    final_score = 0.001
     terminal_error: Optional[str] = None
 
     log_start(task=TASK_NAME, env=BENCHMARK, model=MODEL_NAME)
