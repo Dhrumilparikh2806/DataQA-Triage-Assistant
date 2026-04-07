@@ -34,7 +34,7 @@ def test_ui_endpoint_serves_html() -> None:
 def test_health_endpoint() -> None:
     resp = client.get("/health")
     assert resp.status_code == 200
-    assert resp.json()["status"] == "ok"
+    assert resp.json()["status"] == "healthy"
 
 
 def test_tasks_endpoint_exposes_three_graded_tasks() -> None:
@@ -43,6 +43,26 @@ def test_tasks_endpoint_exposes_three_graded_tasks() -> None:
     payload = resp.json()
     assert payload["task_count"] >= 3
     assert len(payload["task_graders"]) >= 3
+
+
+def test_metadata_endpoint_includes_description_and_tasks() -> None:
+    resp = client.get("/metadata")
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert payload["name"] == "data-quality-triage-assistant"
+    assert isinstance(payload["description"], str)
+    assert payload["task_count"] >= 3
+
+
+def test_schema_and_mcp_endpoints() -> None:
+    schema_resp = client.get("/schema")
+    assert schema_resp.status_code == 200
+    schema = schema_resp.json()
+    assert "action" in schema and "observation" in schema and "state" in schema
+
+    mcp_resp = client.post("/mcp", json={})
+    assert mcp_resp.status_code == 200
+    assert mcp_resp.json()["jsonrpc"] == "2.0"
 
 
 def test_reset_and_step_endpoints() -> None:

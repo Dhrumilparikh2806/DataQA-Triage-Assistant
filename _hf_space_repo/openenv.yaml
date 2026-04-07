@@ -1,9 +1,14 @@
+spec_version: 1
 name: data-quality-triage-assistant
 version: 0.1.0
 description: >-
   A real-world data analysis OpenEnv where agents perform data quality triage
   through cleaning, validation, and submission workflows. Made by #TEAM
   Hack-with-Pals.
+type: space
+runtime: fastapi
+app: app:app
+port: 7860
 entrypoint: env.environment:DataQualityTriageEnv
 author: "#TEAM Hack-with-Pals"
 license: mit
@@ -16,9 +21,18 @@ action_model: env.models:Action
 reward_model: env.models:Reward
 default_task: easy_missing_and_dupes
 tasks:
-  - easy_missing_and_dupes
-  - medium_type_and_category
-  - hard_conflicts_and_budget
+  - task_id: easy_missing_and_dupes
+    grader: env.graders:grade_easy_missing_and_dupes
+    difficulty: easy
+    step_budget: 8
+  - task_id: medium_type_and_category
+    grader: env.graders:grade_medium_type_and_category
+    difficulty: medium
+    step_budget: 10
+  - task_id: hard_conflicts_and_budget
+    grader: env.graders:grade_hard_conflicts_and_budget
+    difficulty: hard
+    step_budget: 12
 task_graders:
   easy_missing_and_dupes: env.graders:grade_easy_missing_and_dupes
   medium_type_and_category: env.graders:grade_medium_type_and_category

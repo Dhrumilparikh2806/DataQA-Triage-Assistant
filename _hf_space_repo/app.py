@@ -80,7 +80,7 @@ def ui() -> FileResponse:
 
 @app.get("/health")
 def health() -> Dict[str, str]:
-    return {"status": "ok"}
+    return {"status": "healthy"}
 
 
 @app.get("/tasks")
@@ -98,11 +98,50 @@ def metadata() -> Dict[str, Any]:
     catalog = DataQualityTriageEnv.task_catalog()
     return {
         "name": "data-quality-triage-assistant",
+        "description": "Data Quality Triage Assistant OpenEnv - Made by #TEAM Hack-with-Pals",
         "default_task": "easy_missing_and_dupes",
         "task_count": len(catalog),
         "tasks": catalog,
         "task_graders": DataQualityTriageEnv.task_graders(),
     }
+
+
+@app.get("/schema")
+def schema() -> Dict[str, Any]:
+    return {
+        "action": {
+            "type": "object",
+            "properties": {
+                "operation": {"type": "string"},
+                "target_columns": {"type": "array", "items": {"type": "string"}},
+                "parameters": {"type": "object"},
+            },
+        },
+        "observation": {
+            "type": "object",
+            "properties": {
+                "dataset_id": {"type": "string"},
+                "task_id": {"type": "string"},
+                "quality_report": {"type": "object"},
+                "validation_passed": {"type": "boolean"},
+                "step_budget_remaining": {"type": "integer"},
+            },
+        },
+        "state": {
+            "type": "object",
+            "properties": {
+                "dataset_id": {"type": "string"},
+                "task_id": {"type": "string"},
+                "step_count": {"type": "integer"},
+                "step_budget": {"type": "integer"},
+            },
+        },
+    }
+
+
+@app.post("/mcp")
+def mcp() -> Dict[str, Any]:
+    return {"jsonrpc": "2.0", "result": {"status": "ok"}, "id": None}
 
 
 @app.post("/reset")
