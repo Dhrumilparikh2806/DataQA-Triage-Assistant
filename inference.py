@@ -74,11 +74,11 @@ def log_step(
     )
 
 
-def log_end(success: bool, steps: int, rewards: List[float]) -> None:
+def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
     """Log episode end."""
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
     print(
-        f"[END] success={str(success).lower()} steps={steps} rewards={rewards_str}",
+        f"[END] success={str(success).lower()} steps={steps} score={score:.3f} rewards={rewards_str}",
         flush=True,
     )
 
@@ -179,6 +179,7 @@ def main() -> None:
     steps_taken = 0
     success = False
     final_score = 0.001
+    score = 0.001
     terminal_error: Optional[str] = None
     env: Optional[DataQualityTriageEnv] = None
 
@@ -259,6 +260,7 @@ def main() -> None:
                 break
 
         # Compute success from environment final_score on terminal step.
+        score = min(max(final_score, 0.0), 1.0)
         success = final_score >= SUCCESS_SCORE_THRESHOLD and terminal_error is None
 
     except Exception as e:
@@ -269,7 +271,7 @@ def main() -> None:
                 env.close()
             except Exception:
                 pass
-        log_end(success=success, steps=steps_taken, rewards=rewards)
+        log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
 
 
 if __name__ == "__main__":
