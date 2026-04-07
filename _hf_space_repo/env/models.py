@@ -27,6 +27,7 @@ class Observation(BaseModel):
     schema_summary: Dict[str, str]
     quality_report: Dict[str, int]
     validation_passed: bool
+    governance_warning: Optional[str] = None
     action_history: List[str] = Field(default_factory=list)
     step_budget_remaining: int
 
@@ -34,6 +35,8 @@ class Observation(BaseModel):
 class Reward(BaseModel):
     immediate_reward: float
     quality_delta: float = 0.0
+    progress_reward: float = 0.0
+    validation_bonus: float = 0.0
     efficiency_penalty: float = 0.0
     safety_penalty: float = 0.0
     terminal_bonus: float = 0.0
@@ -44,6 +47,8 @@ class Reward(BaseModel):
         return (
             self.immediate_reward
             + self.quality_delta
+            + self.progress_reward
+            + self.validation_bonus
             - self.efficiency_penalty
             - self.safety_penalty
             + self.terminal_bonus

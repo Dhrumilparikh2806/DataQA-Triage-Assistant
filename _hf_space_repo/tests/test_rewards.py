@@ -33,3 +33,22 @@ def test_invalid_action_has_penalty() -> None:
 
     assert components["invalid_action"] == 1.0
     assert reward.safety_penalty >= 0.05
+
+
+def test_validation_bonus_and_progress_shaping() -> None:
+    reward, components = compute_reward(
+        quality_before={"missing_values": 12, "duplicates": 3, "outliers": 1},
+        quality_after={"missing_values": 8, "duplicates": 1, "outliers": 1},
+        operation="validate_constraints",
+        step_count=4,
+        step_budget=10,
+        submitted=True,
+        validation_passed=True,
+        repeated_action=False,
+        invalid_action=False,
+        repeat_streak=1,
+    )
+
+    assert reward.progress_reward > 0.0
+    assert reward.validation_bonus > 0.0
+    assert components["category_improvements"]["missing_values"] == 4.0

@@ -7,8 +7,6 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir -r requirements.txt
 
 COPY env ./env
-COPY scripts ./scripts
-COPY tests ./tests
 COPY app.py ./app.py
 COPY dataqa_bench_ui_spec.html ./dataqa_bench_ui_spec.html
 COPY openenv.yaml ./openenv.yaml

@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
@@ -240,6 +241,17 @@
 
   .btn:hover { background: var(--gray-100); }
 
+  .btn:focus-visible,
+  .nav-item:focus-visible,
+  .action-btn:focus-visible,
+  .level-selector-dropdown:focus-visible,
+  .playground-input:focus-visible,
+  select:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--indigo);
+    outline-offset: 2px;
+  }
+
   .btn-primary {
     background: var(--indigo);
     color: #fff;
@@ -275,30 +287,44 @@
 
   .level-selector-controls {
     display: flex;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
+    margin-left: auto;
   }
 
-  .level-selector-btn {
-    padding: 8px 16px;
+  .level-selector-dropdown {
+    padding: 10px 14px;
     border: 1px solid var(--border);
     border-radius: 6px;
     background: var(--surface);
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     transition: all 0.2s ease;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--text-primary);
+    min-width: 200px;
   }
 
-  .level-selector-btn:hover {
+  .level-selector-dropdown:hover {
     border-color: var(--indigo);
     background: var(--indigo-soft);
   }
 
-  .level-selector-btn.selected {
-    background: var(--indigo);
-    color: white;
+  .level-selector-dropdown:focus {
+    outline: none;
     border-color: var(--indigo);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  }
+
+  .level-selector-dropdown option {
+    padding: 8px;
+    background: var(--surface);
+    color: var(--text-primary);
+  }
+
+  .level-selector-dropdown option:hover {
+    background: var(--indigo-soft);
   }
 
   /* ── TABS ── */
@@ -654,12 +680,98 @@
   }
 
   @media (max-width: 980px) {
+    .app-shell {
+      flex-direction: column;
+    }
+
+    .sidebar {
+      width: 100%;
+      height: auto;
+      position: relative;
+      top: auto;
+      overflow: visible;
+    }
+
+    .main {
+      min-height: 0;
+    }
+
+    .topbar {
+      height: auto;
+      padding: 10px 14px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .topbar-sub,
+    .topbar-sep {
+      display: none;
+    }
+
+    .topbar-actions {
+      margin-left: 0;
+      width: 100%;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .content-area,
+    .level-selector-bar {
+      padding: 14px;
+    }
+
+    .level-selector-controls {
+      margin-left: 0;
+      width: 100%;
+    }
+
+    .level-selector-dropdown {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .runner-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .metrics-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
     .playground-controls {
       grid-template-columns: 1fr 1fr;
     }
 
     .playground-split {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .metrics-row {
+      grid-template-columns: 1fr;
+    }
+
+    .playground-controls {
+      grid-template-columns: 1fr;
+    }
+
+    .task-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .btn {
+      padding: 7px 11px;
+      font-size: 11px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
 
@@ -1331,10 +1443,26 @@
   .intro-modal-actions .btn:hover {
     transform: translateY(-1px);
   }
+
+  .team-watermark {
+    position: fixed;
+    right: 14px;
+    bottom: 10px;
+    z-index: 1200;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 9px;
+    box-shadow: var(--shadow);
+  }
 </style>
 </head>
 <body>
 <div class="app-shell">
+  <div class="team-watermark">Made by #TEAM Hack-with-Pals</div>
 
   <!-- SIDEBAR -->
   <nav class="sidebar">
@@ -1357,7 +1485,6 @@
       <div class="sidebar-section-label">Workspace</div>
       <div class="nav-item active" onclick="showScreen('runner')">
         <div class="nav-dot"></div>Agent Runner
-        <span class="nav-badge">live</span>
       </div>
       <div class="nav-item" onclick="showScreen('dashboard')">
         <div class="nav-dot"></div>Overview
@@ -1386,15 +1513,6 @@
       <div class="nav-item" onclick="showScreen('task-library')"><div class="nav-dot"></div>Task Library</div>
     </div>
 
-    <div class="sidebar-bottom">
-      <div class="user-row">
-        <div class="user-avatar">RS</div>
-        <div>
-          <div class="user-name">R. Sharma</div>
-          <div class="user-role">ML Researcher</div>
-        </div>
-      </div>
-    </div>
   </nav>
 
   <!-- MAIN -->
@@ -1415,11 +1533,14 @@
     </div>
 
     <div id="level-selector-bar" class="level-selector-bar">
-      <div class="level-selector-label">Select Level:</div>
+      <div class="level-selector-label">Challenge Level:</div>
       <div class="level-selector-controls">
-        <button class="level-selector-btn" onclick="selectLevelAndShowBriefing('easy_missing_and_dupes')">Easy</button>
-        <button class="level-selector-btn" onclick="selectLevelAndShowBriefing('medium_type_and_category')">Medium</button>
-        <button class="level-selector-btn" onclick="selectLevelAndShowBriefing('hard_conflicts_and_budget')">Hard</button>
+        <select id="level-selector-dropdown" class="level-selector-dropdown" onchange="handleLevelChange(this.value)">
+          <option value="">No Level Selected</option>
+          <option value="easy_missing_and_dupes">Easy - Missing Values & Duplicates</option>
+          <option value="medium_type_and_category">Medium - Type Errors & Category Drift</option>
+          <option value="hard_conflicts_and_budget">Hard - Conflicts & Budget Constraints</option>
+        </select>
       </div>
     </div>
     <div class="content-area level-not-selected">
@@ -1557,6 +1678,9 @@
                 <div class="card-sub">Step · Reset · Get state</div>
               </div>
               <div class="card-body" style="padding:14px">
+                <div style="margin-bottom:10px;font-size:11px;color:var(--text-secondary);line-height:1.5">
+                  Click any action below, then press <strong>Step</strong>. Watch the step budget, quality report, and governance warning update live.
+                </div>
                 <div class="playground-controls">
                   <select id="playground-action-select" class="playground-input">
                     <option value="inspect_schema">inspect_schema</option>
@@ -2279,7 +2403,7 @@
       const saved = localStorage.getItem(STORAGE_KEY);
       return saved ? JSON.parse(saved) : [];
     } catch (e) {
-      console.error("Failed to load runs from localStorage:", e);
+      // Storage can be blocked in some browser privacy modes; default to empty list.
       return [];
     }
   }
@@ -2288,7 +2412,7 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(runs));
     } catch (e) {
-      console.error("Failed to save runs to localStorage:", e);
+      // Ignore storage failures to keep UI functional in restricted contexts.
     }
   }
 
@@ -2304,7 +2428,7 @@
     try {
       localStorage.setItem(INTRO_SHOWN_KEY, "true");
     } catch (e) {
-      console.error("Failed to mark intro as seen:", e);
+      // Ignore storage failures in privacy-restricted sessions.
     }
   }
 
@@ -2313,7 +2437,7 @@
       localStorage.removeItem(INTRO_SHOWN_KEY);
       showIntroModal();
     } catch (e) {
-      console.error("Failed to reset intro:", e);
+      showIntroModal();
     }
   }
 
@@ -2419,39 +2543,20 @@
     }
   }
 
-  function selectLevelAndShowBriefing(taskId) {
+  function handleLevelChange(taskId) {
+    if (!taskId) {
+      return;
+    }
     SESSION.selectedTask = taskId;
     SESSION.pendingLevelStartTask = taskId;
     setTaskById(taskId, false);
     openLevelBriefing(taskId);
   }
 
-  function showLevelSelectorBar() {
-    const bar = document.getElementById("level-selector-bar");
-    if (bar) {
-      bar.style.display = "flex";
-    }
-  }
-
-  function hideLevelSelectorBar() {
-    const bar = document.getElementById("level-selector-bar");
-    if (bar) {
-      bar.style.display = "none";
-    }
-  }
-
-  function updateLevelSelectorButton(taskId) {
-    document.querySelectorAll(".level-selector-btn").forEach(btn => {
-      btn.classList.remove("selected");
-    });
-    const taskMap = {
-      easy_missing_and_dupes: 0,
-      medium_type_and_category: 1,
-      hard_conflicts_and_budget: 2
-    };
-    const buttons = document.querySelectorAll(".level-selector-btn");
-    if (buttons[taskMap[taskId]]) {
-      buttons[taskMap[taskId]].classList.add("selected");
+  function updateLevelSelectorDropdown(taskId) {
+    const dropdown = document.getElementById("level-selector-dropdown");
+    if (dropdown) {
+      dropdown.value = taskId || "";
     }
   }
 
@@ -2459,8 +2564,7 @@
     const backdrop = document.getElementById("intro-backdrop");
     if (backdrop) {
       backdrop.classList.remove("open");
-      showLevelSelectorBar();
-      updateLevelSelectorButton(SESSION.selectedTask);
+      updateLevelSelectorDropdown("");
     }
   }
 
@@ -2476,7 +2580,7 @@
     closeIntroModal();
     SESSION.selectedTask = taskId;
     setTaskById(taskId, false);
-    updateLevelSelectorButton(taskId);
+    updateLevelSelectorDropdown(taskId);
     setTimeout(() => {
       openLevelBriefing(taskId);
     }, 100);
@@ -2828,8 +2932,17 @@
     SESSION.lastReport = report;
     SESSION.lastEval = evaluation;
     if (report.episode.step_count > 0) {
-      SESSION.runs.push(evaluation);
-      saveLeaderboardRuns(SESSION.runs);
+      const runKey = `${evaluation.leaderboard_record?.task_id || "unknown"}:${report.episode.step_count}:${Number(report.episode.cumulative_reward || 0).toFixed(3)}`;
+      const exists = SESSION.runs.some(r => {
+        const task = r.leaderboard_record?.task_id || "unknown";
+        const step = Number(r.metrics?.step_count || report.episode.step_count || 0);
+        const reward = Number(r.metrics?.cumulative_reward || report.episode.cumulative_reward || 0).toFixed(3);
+        return `${task}:${step}:${reward}` === runKey;
+      });
+      if (!exists) {
+        SESSION.runs.push(evaluation);
+        saveLeaderboardRuns(SESSION.runs);
+      }
       renderRecentRuns();
       renderLeaderboard();
     }
@@ -3010,9 +3123,12 @@
       return;
     }
 
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s => {
+      const active = s === target;
+      s.classList.toggle('active', active);
+      s.style.display = active ? 'block' : 'none';
+    });
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    target.classList.add('active');
 
     const titles = {
       runner: ['Agent Runner', 'hard_conflicts_and_budget · Step 7 of 80'],
@@ -3048,7 +3164,7 @@
   }
 
   window.addEventListener("load", () => {
-    ensureVisibleScreen("runner");
+    showScreen("runner");
     updateTaskIndicators();
     renderTaskLibrary();
     renderApiSettings({
@@ -3061,19 +3177,15 @@
     updatePlaygroundMeta({ action: "none", step: 0, submitted: false });
     
     // Load and display all content
-    refreshFromServer().catch(err => console.error("Error loading data:", err));
+    refreshFromServer().catch(() => setPlaygroundStatus("initial data load failed", "warn"));
     
-    // Show level selector bar
-    showLevelSelectorBar();
-    updateLevelSelectorButton(SESSION.selectedTask);
+    // Show level selector dropdown - reset to no selection
+    updateLevelSelectorDropdown("");
     
     // Show intro modal on page load
     const backdrop = document.getElementById("intro-backdrop");
     if (backdrop) {
       backdrop.classList.add("open");
-      console.log("✓ Intro modal displayed");
-    } else {
-      console.error("✗ Intro backdrop element not found");
     }
   });
 </script>

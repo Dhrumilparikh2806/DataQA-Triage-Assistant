@@ -6,7 +6,7 @@ from .graders import grade_task
 from .governance import assess_step_risk, summarize_episode
 from .models import Action, EnvState, Observation, Reward
 from .rewards import compute_reward
-from .simulator import apply_action
+from .simulator import apply_action, build_task_dataset, compute_quality_report, validate_task_constraints
 from .tasks import get_task
 
 
@@ -15,24 +15,30 @@ class DataQualityTriageEnv:
         self.task_id = task_id
         self._task = get_task(task_id)
         self._state: EnvState | None = None
+        self._dataset: list[dict[str, Any]] = []
 
     def reset(self) -> Observation:
         self._task = get_task(self.task_id)
+        self._dataset = build_task_dataset(self._task.task_id, self._task.initial_quality_report)
+        quality_report = compute_quality_report(self._dataset)
         self._state = EnvState(
             dataset_id=self._task.dataset_id,
             task_id=self._task.task_id,
             step_count=0,
             step_budget=self._task.step_budget,
-            quality_report=deepcopy(self._task.initial_quality_report),
+            quality_report=deepcopy(quality_report),
             validation_passed=False,
             submitted=False,
             action_history=[],
             notes={
                 "difficulty": self._task.difficulty,
-                "quality_history": [deepcopy(self._task.initial_quality_report)],
+                "quality_history": [deepcopy(quality_report)],
                 "reward_history": [],
+                "reward_components_history": [],
                 "governance_events": [],
                 "invalid_action_count": 0,
+                "dataset_rows": len(self._dataset),
+                "governance_warning": None,
             },
         )
         return self._to_observation()
@@ -53,6 +59,7 @@ class DataQualityTriageEnv:
                 validation_passed=state.validation_passed,
                 repeated_action=False,
                 invalid_action=True,
+                repeat_streak=1,
             )
             info: Dict[str, Any] = {
                 "reward_components": components,
@@ -79,15 +86,20 @@ class DataQualityTriageEnv:
             return self._to_observation(), reward, True, info
 
         state.step_count += 1
-        repeated_action = bool(state.action_history and state.action_history[-1] == action.operation)
+        repeat_streak = 1
+        for previous_operation in reversed(state.action_history):
+            if previous_operation != action.operation:
+                break
+            repeat_streak += 1
+        repeated_action = repeat_streak > 1
         invalid_action = False
 
         quality_before = deepcopy(state.quality_report)
         if not self._is_action_valid(action):
             invalid_action = True
         else:
-            quality_after, _delta = apply_action(state.quality_report, action)
-            state.quality_report = quality_after
+            self._dataset = apply_action(self._dataset, action)
+            state.quality_report = compute_quality_report(self._dataset)
 
         if action.operation == "validate_constraints":
             state.validation_passed = self._constraints_satisfied(state.quality_report)
@@ -106,6 +118,7 @@ class DataQualityTriageEnv:
             validation_passed=state.validation_passed,
             repeated_action=repeated_action,
             invalid_action=invalid_action,
+            repeat_streak=repeat_streak,
         )
 
         governance = assess_step_risk(
@@ -129,9 +142,13 @@ class DataQualityTriageEnv:
         reward_history = list(notes.get("reward_history", []))
         reward_history.append(reward_obj.total)
         notes["reward_history"] = reward_history
+        reward_components_history = list(notes.get("reward_components_history", []))
+        reward_components_history.append(deepcopy(reward_components))
+        notes["reward_components_history"] = reward_components_history
         governance_events = list(notes.get("governance_events", []))
         governance_events.append(governance)
         notes["governance_events"] = governance_events
+        notes["governance_warning"] = governance.get("recommendations", [None])[0] if governance.get("flags") else None
         state.notes = notes
 
         done = state.submitted or state.step_count >= state.step_budget
@@ -163,6 +180,7 @@ class DataQualityTriageEnv:
         notes = state.notes or {}
         quality_history = notes.get("quality_history", [])
         reward_history = notes.get("reward_history", [])
+        reward_components_history = notes.get("reward_components_history", [])
         governance_events = notes.get("governance_events", [])
 
         final_score = grade_task(
@@ -213,6 +231,7 @@ class DataQualityTriageEnv:
                 "action_counts": action_counts,
                 "quality_history": quality_history,
                 "reward_history": reward_history,
+                "reward_components_history": reward_components_history,
             },
         }
 
@@ -229,17 +248,22 @@ class DataQualityTriageEnv:
         if self._state is None:
             raise RuntimeError("Environment has no state. Call reset() first.")
         state = self._state
+        schema_summary = {
+            "order_id": "string",
+            "amount": "float",
+            "region": "category",
+            "timestamp": "datetime",
+        }
+        if self._dataset:
+            first_row = self._dataset[0]
+            schema_summary = {k: type(v).__name__ for k, v in first_row.items()}
         return Observation(
             dataset_id=state.dataset_id,
             task_id=state.task_id,
-            schema_summary={
-                "order_id": "string",
-                "amount": "float",
-                "region": "category",
-                "timestamp": "datetime",
-            },
+            schema_summary=schema_summary,
             quality_report=deepcopy(state.quality_report),
             validation_passed=state.validation_passed,
+            governance_warning=(state.notes or {}).get("governance_warning"),
             action_history=deepcopy(state.action_history),
             step_budget_remaining=max(0, state.step_budget - state.step_count),
         )
@@ -248,6 +272,8 @@ class DataQualityTriageEnv:
         for key, target in self._task.target_quality_report.items():
             if quality_report.get(key, 0) > target:
                 return False
+        if not validate_task_constraints(self._dataset, self._task.schema_constraints):
+            return False
         return True
 
     def _is_action_valid(self, action: Action) -> bool:
@@ -261,4 +287,22 @@ class DataQualityTriageEnv:
         }
         if action.operation in requires_columns and not action.target_columns:
             return False
+        valid_columns = {
+            "order_id",
+            "amount",
+            "region",
+            "timestamp",
+            "*",
+            "sales",
+            "revenue",
+            "sale_amount",
+            "amount_usd",
+            "date",
+            "time",
+            "sale_date",
+            "id",
+        }
+        for col in action.target_columns:
+            if col not in valid_columns:
+                return False
         return True

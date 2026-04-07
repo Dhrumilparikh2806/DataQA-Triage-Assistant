@@ -1,10 +1,11 @@
 ---
-title: Data Quality Triage Assistant
+title: Data Quality Triage Assistant - Made by #TEAM Hack-with-Pals
 emoji: "📊"
 colorFrom: blue
 colorTo: green
 sdk: docker
 app_port: 7860
+base_path: /ui
 tags:
   - openenv
   - data-analysis
@@ -13,30 +14,96 @@ tags:
 
 # Data Quality Triage Assistant (OpenEnv)
 
-Data Quality Triage Assistant is a real-world data-analysis environment where an agent performs dataset triage: inspect, clean, validate, and submit.
+Made by #TEAM Hack-with-Pals.
 
-## Motivation
-Analysts spend significant effort preparing low-quality datasets before meaningful analysis can begin. This environment simulates that practical workflow with objective scoring and deterministic constraints.
+## Run Locally (Start Here)
 
-## Current Status
-Implemented:
-- typed Pydantic models for observation/action/reward
-- deterministic step/reset/state API
-- easy/medium/hard task registry
-- deterministic reward and grader modules
-- baseline runner and test suite
+This is the fastest way to run the final project locally.
 
-Planned next:
-- full OpenEnv validator integration
-- Hugging Face Space deployment wiring
+### 1) Prerequisites
+- Python 3.11+
+- Docker Desktop (for container run checks)
+- OpenEnv CLI available in your environment
 
-## Environment API
-- reset() -> initial observation
-- step(action) -> observation, reward, done, info
-- state() -> current internal state snapshot
+### 2) Install dependencies
+```bash
+pip install -r requirements.txt
+```
 
-## Action Space
-Primary operations:
+### 3) Validate project structure
+```bash
+openenv validate
+```
+
+### 4) Run the web app locally
+```bash
+uvicorn app:app --host 0.0.0.0 --port 7860
+```
+Open in browser: http://localhost:7860/ui
+
+### 5) Run required inference script
+Set required variables:
+- API_BASE_URL
+- MODEL_NAME
+- HF_TOKEN (or API_KEY fallback)
+
+Example:
+```bash
+python inference.py
+```
+
+The script prints strict structured logs:
+- [START]
+- [STEP]
+- [END]
+
+### 6) Optional Docker verification
+```bash
+docker build -t data-quality-openenv:precheck .
+docker run --rm -p 7860:7860 data-quality-openenv:precheck
+```
+
+## What This Project Is
+
+Data Quality Triage Assistant by #TEAM Hack-with-Pals is an OpenEnv benchmark environment where an agent performs realistic data quality triage:
+1. Inspect data quality state
+2. Apply cleaning actions
+3. Validate constraints
+4. Submit within step budget
+
+This repository is tailored for hackathon evaluation with:
+- deterministic behavior
+- typed action/observation/reward models
+- 3 task difficulties
+- governance risk signals
+- evaluator gates and leaderboard-compatible metrics
+
+## Project Layout
+
+- app.py: FastAPI server and UI/API routes
+- inference.py: required baseline inference script
+- openenv.yaml: OpenEnv environment metadata
+- env/: core environment implementation
+	- env/environment.py: reset/step/report/evaluate flow
+	- env/models.py: typed schemas
+	- env/tasks.py: task definitions and constraints
+	- env/simulator.py: data-backed action effects and quality metrics
+	- env/rewards.py: step-level reward decomposition
+	- env/graders.py: final episode score in [0.0, 1.0]
+	- env/evaluator.py: pass/fail gates and composite scoring
+	- env/governance.py: risk flags and recommendations
+	- env/fixtures/*.csv: task datasets used at runtime
+
+## Environment Contract
+
+Core methods:
+- reset() -> Observation
+- step(Action) -> Observation, Reward, done, info
+- state() -> internal snapshot
+- generate_run_report() -> run summary
+- evaluate_run() -> gate-based decision payload
+
+Action operations:
 - inspect_schema
 - profile_column
 - clean_missing
@@ -47,151 +114,172 @@ Primary operations:
 - validate_constraints
 - submit
 
-Action schema is defined in env/models.py.
+Target column wildcard:
+- You can pass target_columns=["*"] to apply an operation across the whole dataset.
+- This is especially useful for deduplicate when you want full-row duplicate removal.
 
-## Observation Space
-Each observation contains:
-- dataset_id
-- task_id
-- schema_summary
-- quality_report
-- validation_passed
-- action_history
-- step_budget_remaining
+## Tasks
 
-Observation schema is defined in env/models.py.
+Configured tasks:
+- easy_missing_and_dupes
+- medium_type_and_category
+- hard_conflicts_and_budget
 
-## Reward Design
-Reward combines:
-- quality improvement delta
-- efficiency penalty for late-stage over-steps
-- safety penalties for repeated and invalid actions
-- terminal bonus/penalty on submit based on validation status
+Each task defines:
+- initial quality report
+- target quality report
+- step budget
+- schema constraints (required columns, type/range rules, uniqueness, category constraints)
 
-Reward schema and logic:
-- env/models.py
-- env/rewards.py
+## Grading and Scoring Logic (Detailed)
 
-## Standout Feature: Governance and Audit Intelligence
-This project includes an industry-style governance layer for trust, QA, and compliance workflows:
-- per-step risk scoring with risk levels (low/medium/high)
-- risk flags for invalid actions, repeated actions, late no-progress behavior, and unsafe submit patterns
-- actionable recommendations at each step
-- full run report export with telemetry, action counts, reward history, quality trajectory, and governance summary
+This section explains exactly how scores are produced.
 
-Core files:
-- env/governance.py
-- env/environment.py (generate_run_report)
-- app.py (/report endpoint)
+### A) Step reward (dense signal during episode)
 
-## Premium Feature: Leaderboard and CI Evaluator
-This project now includes a leaderboard-ready evaluator schema with automatic pass/fail gates.
+Defined in env/rewards.py.
 
-What it does:
-- evaluates each run against threshold gates (score, risk, invalid actions, quality reduction)
-- emits a strict decision: approved or rejected
-- produces a stable leaderboard record payload for tracking and ranking
-- supports custom threshold overrides for stricter CI policies
+For each step, reward is composed of:
+- immediate_reward
+- quality_delta
+- progress_reward
+- validation_bonus
+- terminal_bonus
+- minus efficiency_penalty
+- minus safety_penalty
 
-Core files:
-- env/evaluator.py
-- env/environment.py (evaluate_run)
-- app.py (/evaluate endpoint)
+Total formula:
 
-Example CI usage:
-```bash
-python scripts/evaluate_all.py
-```
+total = immediate_reward + quality_delta + progress_reward + validation_bonus - efficiency_penalty - safety_penalty + terminal_bonus
 
-The output includes per-policy evaluation decisions and failed gate names.
+Key behaviors:
+1. Quality improvement adds positive reward.
+2. Category-weighted improvements add extra progress reward.
+3. validate_constraints adds bonus only when constraints actually pass.
+4. Repeated/invalid actions increase safety penalties.
+5. Late, low-progress behavior adds efficiency penalties.
+6. submit gets terminal bonus if validated, penalty if not.
 
-## Task Suite
-- easy_missing_and_dupes (easy)
-- medium_type_and_category (medium)
-- hard_conflicts_and_budget (hard)
+This creates a non-sparse learning signal while preserving final-objective pressure.
 
-Task registry: env/tasks.py
+### B) Final task grade (episode score in [0, 1])
 
-## Deterministic Grading
-Each task is graded from 0.0 to 1.0 using:
-- distance to target quality constraints
-- validation success
-- budget efficiency
+Defined in env/graders.py.
 
-Grader: env/graders.py
+Important rule:
+- If the agent never submits, final score is 0.0.
 
-### Task Descriptions
-- easy_missing_and_dupes:
-	- objective: eliminate missing values and duplicates, then validate and submit.
-	- challenge profile: straightforward quality defects and larger step budget.
-- medium_type_and_category:
-	- objective: handle missingness, type casting, category normalization, and outlier capping.
-	- challenge profile: multi-issue triage requiring ordered operations.
-- hard_conflicts_and_budget:
-	- objective: maximize quality gains under strict step budget with non-zero target tolerances.
-	- challenge profile: constrained planning with tradeoffs.
+When submitted, score blends three components:
+1. Quality target score (50%)
+2. Validation score (30%)
+3. Budget efficiency (20%)
 
-## Baseline Scores (Current Scripted Baseline)
-- easy_missing_and_dupes: 0.2444444444
-- medium_type_and_category: 0.3259740260
-- hard_conflicts_and_budget: 0.2037931034
-- aggregate_score: 0.2580705246
+Details:
+1. Quality target score measures remaining gap to target issues.
+2. Validation score is 1.0 only if validation_passed is true.
+3. Budget efficiency rewards completing in fewer steps.
 
-Scores source: scripts/baseline_results.json
+Final grade formula:
 
-## Quick Start
-```bash
-pip install -r requirements.txt
-pytest -q
-python scripts/run_baseline.py
-python scripts/validate_project.py
-```
+score = 0.5 * quality_target_score + 0.3 * validation_score + 0.2 * budget_efficiency
 
-## OpenAI Baseline Mode
-If OPENAI_API_KEY is set, scripts/run_baseline.py runs an OpenAI model policy.
+The score is always clamped to [0.0, 1.0].
 
-Optional environment variable:
-- OPENAI_MODEL (default: gpt-4.1-mini)
+### C) Evaluation gates (approve/reject decision)
 
-Without OPENAI_API_KEY, the script uses a deterministic scripted baseline.
+Defined in env/evaluator.py.
 
-## Docker
-```bash
-docker build -t data-quality-openenv .
-docker run --rm -p 7860:7860 data-quality-openenv
-```
+After the episode, gates evaluate:
+- min_final_score
+- max_invalid_actions
+- max_risk_score
+- min_issue_reduction_ratio
 
-## Hugging Face Space Deployment
-1. Create a new Hugging Face Space with Docker SDK.
-2. Push this repository content to the Space.
-3. Ensure README front matter includes sdk: docker and app_port: 7860.
-4. Add Space topic/tag openenv.
-5. Set OPENAI_API_KEY in Space secrets if running LLM baseline mode.
+Decision:
+- approved if all gates pass
+- rejected otherwise
 
-## Evaluation Utilities
-```bash
-python scripts/evaluate_all.py
-```
-
-This compares good and bad trajectories and stores results in scripts/trajectory_eval_results.json.
+Also produced:
+- composite_score for ranking
+- leaderboard_record payload
 
 ## API Endpoints
+
 - GET /health
 - POST /reset
 - POST /step
 - GET /state
 - GET /report
 - POST /evaluate
+- GET /ui
 
-## Validation Note
-Local tests pass, but OpenEnv CLI validation currently depends on the correct validator binary/package for this runtime. Once the exact CLI distribution is finalized, run:
+## Inference Requirements
 
+The submitted inference script is inference.py at repo root.
+
+Required environment variables:
+- API_BASE_URL
+- MODEL_NAME
+- HF_TOKEN
+
+Optional fallback:
+- API_KEY
+
+Defaults in script:
+- API_BASE_URL = https://router.huggingface.co/v1
+- MODEL_NAME = Qwen/Qwen2.5-72B-Instruct
+
+Prompting tip for better baseline quality:
+- Explicitly use target_columns=["*"] for global operations (especially deduplicate) instead of hallucinating per-column lists.
+
+## Reproducibility
+
+This project is deterministic by design:
+- fixed task definitions
+- deterministic fixture loading
+- deterministic environment transitions for identical action sequences
+
+Expected outcomes:
+- repeated runs of the same action plan on same task yield same final score and step count
+
+## Real Dataset Mode
+
+The environment now prefers real Hugging Face datasets at reset time and falls back to the deterministic fixtures only when loading fails.
+
+Default task sources:
+- easy_missing_and_dupes -> `phihung/titanic`
+- medium_type_and_category -> `scikit-learn/adult-census-income`
+- hard_conflicts_and_budget -> `cestwc/bank-marketing`
+
+You can override the dataset source with these env vars:
+- REAL_DATASET_NAME
+- REAL_DATASET_CONFIG
+- REAL_DATASET_SPLIT (defaults to the task's split or `train`)
+- REAL_DATASET_LIMIT
+
+The loader canonicalizes the source rows into the benchmark schema, then computes the baseline quality report directly from the loaded data at `reset()`.
+That means the difficulty profile is driven by the actual dataset rows, not by a synthetic error counter.
+If the dataset library is unavailable or the remote dataset cannot be loaded, the environment falls back to the built-in fixtures so the benchmark still runs deterministically.
+
+## Hugging Face Space Deployment
+
+This repo is already configured for Docker Space deployment.
+
+Deployment command used in this project:
 ```bash
-openenv validate
+openenv push . --private
 ```
 
-Until then, run the local project structure validator:
+Space should respond to:
+- POST /reset (HTTP 200)
 
-```bash
-python scripts/validate_project.py
-```
+## Final Pre-Submission Checklist
+
+Use this exact order:
+1. openenv validate
+2. docker build -t data-quality-openenv:precheck .
+3. python inference.py
+4. Verify 3 tasks and grader outputs in [0.0, 1.0]
+5. Verify Space /reset returns 200
+
+If all pass, the project is ready for submission.
