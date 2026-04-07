@@ -1,9 +1,10 @@
-FROM python:3.11-slim
+FROM python:3.11.9-slim
 
 WORKDIR /app
 
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
 
 COPY env ./env
 COPY app.py ./app.py
@@ -14,6 +15,7 @@ COPY pyproject.toml ./pyproject.toml
 COPY inference.py ./inference.py
 
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 7860
 
