@@ -35,6 +35,11 @@ pip install -r requirements.txt
 openenv validate
 ```
 
+Optional full pre-submission validation (Space ping + Docker build + openenv validate):
+```bash
+bash scripts/validate-submission.sh https://your-space.hf.space
+```
+
 ### 4) Run the web app locally
 ```bash
 uvicorn app:app --host 0.0.0.0 --port 7860
