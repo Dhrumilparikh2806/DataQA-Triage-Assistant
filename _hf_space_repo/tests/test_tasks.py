@@ -17,3 +17,11 @@ def test_each_task_has_explicit_grader() -> None:
     for task_id in ("easy_missing_and_dupes", "medium_type_and_category", "hard_conflicts_and_budget"):
         task = get_task(task_id)
         assert task.grader.startswith("env.graders:")
+
+def test_task_registry_exports_are_available() -> None:
+    from env import TASK_CONFIGS, TASKS as PACKAGE_TASKS, task_catalog, tasks
+
+    assert len(PACKAGE_TASKS) == 3
+    assert len(TASK_CONFIGS) == 3
+    assert len(task_catalog) == 3
+    assert len(tasks) == 3

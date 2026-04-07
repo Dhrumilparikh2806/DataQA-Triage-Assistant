@@ -156,9 +156,16 @@ TASK_CONFIGS = [
     for task in TASKS.values()
 ]
 
+# Lowercase aliases for validators that import module-level task registries.
+tasks = TASK_CONFIGS
+task_catalog = TASK_CONFIGS
+
 
 def get_task(task_id: str) -> TaskDefinition:
     if task_id not in TASKS:
         available = ", ".join(sorted(TASKS.keys()))
         raise ValueError(f"Unknown task_id '{task_id}'. Available: {available}")
     return TASKS[task_id]
+
+
+__all__ = ["TaskDefinition", "TASKS", "TASK_CONFIGS", "tasks", "task_catalog", "get_task"]
