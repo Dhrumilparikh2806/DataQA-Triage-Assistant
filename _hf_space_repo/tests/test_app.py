@@ -37,6 +37,14 @@ def test_health_endpoint() -> None:
     assert resp.json()["status"] == "ok"
 
 
+def test_tasks_endpoint_exposes_three_graded_tasks() -> None:
+    resp = client.get("/tasks")
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert payload["task_count"] >= 3
+    assert len(payload["task_graders"]) >= 3
+
+
 def test_reset_and_step_endpoints() -> None:
     reset_resp = client.post("/reset", json={"task_id": "easy_missing_and_dupes"})
     assert reset_resp.status_code == 200
@@ -58,6 +66,16 @@ def test_reset_and_step_endpoints() -> None:
     assert "done" in payload
     assert "info" in payload
     assert "governance" in payload["info"]
+
+
+def test_reset_accepts_task_aliases() -> None:
+    reset_resp = client.post("/reset", json={"task": "medium_type_and_category"})
+    assert reset_resp.status_code == 200
+    assert reset_resp.json()["task_id"] == "medium_type_and_category"
+
+    reset_resp = client.post("/reset", json={"task_name": "hard_conflicts_and_budget"})
+    assert reset_resp.status_code == 200
+    assert reset_resp.json()["task_id"] == "hard_conflicts_and_budget"
 
 
 def test_report_endpoint() -> None:

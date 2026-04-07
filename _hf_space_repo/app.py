@@ -16,7 +16,9 @@ _env.reset()
 
 
 class ResetRequest(BaseModel):
-    task_id: str = "easy_missing_and_dupes"
+    task_id: str | None = None
+    task: str | None = None
+    task_name: str | None = None
 
 
 class StepRequest(BaseModel):
@@ -34,6 +36,15 @@ def _ensure_env_ready() -> None:
         _env.state()
     except RuntimeError:
         _env.reset()
+
+
+def _resolve_task_id(req: ResetRequest | None) -> str:
+    if req is None:
+        return "easy_missing_and_dupes"
+    for candidate in (req.task_id, req.task, req.task_name):
+        if candidate:
+            return candidate
+    return "easy_missing_and_dupes"
 
 
 @app.get("/")
@@ -97,7 +108,7 @@ def metadata() -> Dict[str, Any]:
 @app.post("/reset")
 def reset(req: ResetRequest | None = None) -> Dict[str, Any]:
     global _env
-    task_id = req.task_id if req else "easy_missing_and_dupes"
+    task_id = _resolve_task_id(req)
     _env = DataQualityTriageEnv(task_id=task_id)
     obs = _env.reset()
     return obs.model_dump()
