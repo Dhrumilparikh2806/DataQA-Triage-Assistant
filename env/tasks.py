@@ -11,6 +11,8 @@ class TaskDefinition:
     initial_quality_report: Dict[str, int]
     target_quality_report: Dict[str, int]
     grader: str
+    work_objective: str
+    primary_operations: tuple[str, ...]
     schema_constraints: Dict[str, Any]
     dataset_mode: str = "synthetic"
     hf_dataset_name: str | None = None
@@ -41,6 +43,8 @@ TASKS: Dict[str, TaskDefinition] = {
             "outliers": 0,
         },
         grader="env.graders:grade_easy_missing_and_dupes",
+        work_objective="Resolve missing values and duplicate records quickly while preserving valid schema.",
+        primary_operations=("inspect_schema", "clean_missing", "deduplicate", "validate_constraints", "submit"),
         schema_constraints={
             "required_columns": ["order_id", "amount", "region", "timestamp"],
             "allowed_regions": ["North", "South", "East", "West"],
@@ -79,6 +83,8 @@ TASKS: Dict[str, TaskDefinition] = {
             "outliers": 1,
         },
         grader="env.graders:grade_medium_type_and_category",
+        work_objective="Correct invalid types and inconsistent categories with controlled outlier handling.",
+        primary_operations=("inspect_schema", "profile_column", "cast_type", "normalize_categories", "validate_constraints", "submit"),
         schema_constraints={
             "required_columns": ["order_id", "amount", "region", "timestamp"],
             "allowed_regions": ["North", "South", "East", "West"],
@@ -116,6 +122,8 @@ TASKS: Dict[str, TaskDefinition] = {
             "outliers": 2,
         },
         grader="env.graders:grade_hard_conflicts_and_budget",
+        work_objective="Balance deep conflict cleanup under budget while meeting strict validation constraints.",
+        primary_operations=("inspect_schema", "profile_column", "clean_missing", "deduplicate", "cast_type", "normalize_categories", "cap_outliers", "validate_constraints", "submit"),
         schema_constraints={
             "required_columns": ["order_id", "amount", "region", "timestamp"],
             "allowed_regions": ["North", "South", "East", "West"],
@@ -140,6 +148,8 @@ TASK_CONFIGS = [
     {
         "task_id": task.task_id,
         "grader": task.grader,
+        "work_objective": task.work_objective,
+        "primary_operations": list(task.primary_operations),
         "difficulty": task.difficulty,
         "step_budget": task.step_budget,
     }

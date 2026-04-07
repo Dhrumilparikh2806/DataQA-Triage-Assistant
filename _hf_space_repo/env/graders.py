@@ -14,6 +14,13 @@ def _extract_report(report: Dict[str, Any]):
 # Small epsilon to ensure scores stay strictly within (0, 1)
 EPSILON = 0.001
 
+# Explicit task-specific grading profiles to keep task work and scoring distinct.
+GRADE_PROFILES = {
+    "easy_missing_and_dupes": (0.60, 0.25, 0.15),
+    "medium_type_and_category": (0.50, 0.30, 0.20),
+    "hard_conflicts_and_budget": (0.45, 0.35, 0.20),
+}
+
 def _bounded(value: float) -> float:
     """Bound value strictly to (EPSILON, 1-EPSILON) to ensure open interval."""
     return max(EPSILON, min(1.0 - EPSILON, value))
@@ -47,7 +54,15 @@ def grade_task(
     validation_score = (1.0 - EPSILON) if validation_passed else EPSILON
     budget_efficiency = _bounded(1.0 - (step_count / float(task.step_budget + 1)))
 
-    score = (0.5 * quality_target_score) + (0.3 * validation_score) + (0.2 * budget_efficiency)
+    quality_weight, validation_weight, budget_weight = GRADE_PROFILES.get(
+        task.task_id,
+        (0.5, 0.3, 0.2),
+    )
+    score = (
+        (quality_weight * quality_target_score)
+        + (validation_weight * validation_score)
+        + (budget_weight * budget_efficiency)
+    )
     return _bounded(score)
 
 
