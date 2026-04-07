@@ -8,10 +8,16 @@ from .models import Action, EnvState, Observation, Reward
 from .rewards import compute_reward
 from .rubrics import DataQualityTriageRubric
 from .simulator import apply_action, build_task_dataset, compute_quality_report, validate_task_constraints
-from .tasks import TASK_CONFIGS, get_task
+from .tasks import TASK_CONFIGS, TASKS as TASK_MAP, get_task
 
 
 class DataQualityTriageEnv:
+    # Class-level aliases for validators that introspect environment objects directly.
+    TASKS = [entry["task_id"] for entry in TASK_CONFIGS]
+    TASK_CONFIGS = TASK_CONFIGS
+    TASK_DEFINITIONS = list(TASK_MAP.values())
+    TASK_GRADERS = {entry["task_id"]: entry["grader"] for entry in TASK_CONFIGS}
+
     def __init__(self, task_id: str = "easy_missing_and_dupes") -> None:
         self.task_id = task_id
         self._task = get_task(task_id)
@@ -30,6 +36,14 @@ class DataQualityTriageEnv:
     @staticmethod
     def task_grader_registry() -> dict[str, str]:
         return DataQualityTriageEnv.task_graders()
+
+    @staticmethod
+    def graders() -> dict[str, str]:
+        return DataQualityTriageEnv.task_graders()
+
+    @staticmethod
+    def tasks() -> list[dict[str, Any]]:
+        return DataQualityTriageEnv.task_catalog()
 
     def reset(self) -> Observation:
         self._task = get_task(self.task_id)

@@ -90,7 +90,11 @@ def tasks() -> Dict[str, Any]:
     grader_registry = DataQualityTriageEnv.task_grader_registry()
     return {
         "task_count": len(catalog),
+        "tasks_count": len(catalog),
+        "tasks_with_graders_count": len(grader_registry),
         "tasks": catalog,
+        "task_definitions": catalog,
+        "task_ids": sorted(grader_registry.keys()),
         "task_graders": grader_registry,
         "graders": grader_registry,
         "grader_count": len(grader_registry),
@@ -106,7 +110,11 @@ def metadata() -> Dict[str, Any]:
         "description": "Data Quality Triage Assistant OpenEnv - Made by #TEAM Hack-with-Pals",
         "default_task": "easy_missing_and_dupes",
         "task_count": len(catalog),
+        "tasks_count": len(catalog),
+        "tasks_with_graders_count": len(grader_registry),
         "tasks": catalog,
+        "task_definitions": catalog,
+        "task_ids": sorted(grader_registry.keys()),
         "task_graders": grader_registry,
         "graders": grader_registry,
         "grader_count": len(grader_registry),
