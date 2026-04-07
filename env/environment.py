@@ -6,6 +6,7 @@ from .graders import grade_task
 from .governance import assess_step_risk, summarize_episode
 from .models import Action, EnvState, Observation, Reward
 from .rewards import compute_reward
+from .rubrics import DataQualityTriageRubric
 from .simulator import apply_action, build_task_dataset, compute_quality_report, validate_task_constraints
 from .tasks import get_task
 
@@ -16,6 +17,7 @@ class DataQualityTriageEnv:
         self._task = get_task(task_id)
         self._state: EnvState | None = None
         self._dataset: list[dict[str, Any]] = []
+        self.rubric = DataQualityTriageRubric()
 
     def reset(self) -> Observation:
         self._task = get_task(self.task_id)

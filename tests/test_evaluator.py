@@ -49,3 +49,9 @@ def test_evaluator_approves_good_trajectory() -> None:
     if result["decision"] == "approved":
         assert "leaderboard_record" in result
         assert 0.0 <= float(result["metrics"]["composite_score"])
+
+
+def test_environment_exposes_three_named_rubrics() -> None:
+    env = DataQualityTriageEnv(task_id="easy_missing_and_dupes")
+    rubric_names = [name for name, _ in env.rubric.named_children()]
+    assert rubric_names == ["easy_missing_and_dupes", "medium_type_and_category", "hard_conflicts_and_budget"]
