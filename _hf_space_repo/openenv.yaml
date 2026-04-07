@@ -23,3 +23,14 @@ task_graders:
   easy_missing_and_dupes: env.graders:grade_easy_missing_and_dupes
   medium_type_and_category: env.graders:grade_medium_type_and_category
   hard_conflicts_and_budget: env.graders:grade_hard_conflicts_and_budget
+graders:
+  easy_missing_and_dupes: env.graders:grade_easy_missing_and_dupes
+  medium_type_and_category: env.graders:grade_medium_type_and_category
+  hard_conflicts_and_budget: env.graders:grade_hard_conflicts_and_budget
+task_definitions:
+  - task_id: easy_missing_and_dupes
+    grader: env.graders:grade_easy_missing_and_dupes
+  - task_id: medium_type_and_category
+    grader: env.graders:grade_medium_type_and_category
+  - task_id: hard_conflicts_and_budget
+    grader: env.graders:grade_hard_conflicts_and_budget

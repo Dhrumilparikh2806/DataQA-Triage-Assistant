@@ -135,6 +135,17 @@ TASKS: Dict[str, TaskDefinition] = {
     ),
 }
 
+# Compatibility metadata for validators that scan Python modules directly.
+TASK_CONFIGS = [
+    {
+        "task_id": task.task_id,
+        "grader": task.grader,
+        "difficulty": task.difficulty,
+        "step_budget": task.step_budget,
+    }
+    for task in TASKS.values()
+]
+
 
 def get_task(task_id: str) -> TaskDefinition:
     if task_id not in TASKS:
