@@ -10,6 +10,7 @@ class TaskDefinition:
     step_budget: int
     initial_quality_report: Dict[str, int]
     target_quality_report: Dict[str, int]
+    grader: str
     schema_constraints: Dict[str, Any]
     dataset_mode: str = "synthetic"
     hf_dataset_name: str | None = None
@@ -39,6 +40,7 @@ TASKS: Dict[str, TaskDefinition] = {
             "category_inconsistency": 0,
             "outliers": 0,
         },
+        grader="env.graders:grade_easy_missing_and_dupes",
         schema_constraints={
             "required_columns": ["order_id", "amount", "region", "timestamp"],
             "allowed_regions": ["North", "South", "East", "West"],
@@ -76,6 +78,7 @@ TASKS: Dict[str, TaskDefinition] = {
             "category_inconsistency": 0,
             "outliers": 1,
         },
+        grader="env.graders:grade_medium_type_and_category",
         schema_constraints={
             "required_columns": ["order_id", "amount", "region", "timestamp"],
             "allowed_regions": ["North", "South", "East", "West"],
@@ -112,6 +115,7 @@ TASKS: Dict[str, TaskDefinition] = {
             "category_inconsistency": 0,
             "outliers": 2,
         },
+        grader="env.graders:grade_hard_conflicts_and_budget",
         schema_constraints={
             "required_columns": ["order_id", "amount", "region", "timestamp"],
             "allowed_regions": ["North", "South", "East", "West"],
