@@ -16,10 +16,8 @@ from env.models import Action
 
 # MANDATORY: Environment variables
 HF_TOKEN = os.getenv("HF_TOKEN")
-API_KEY = HF_TOKEN or os.getenv("API_KEY")
-API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
-MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME", None)
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4.1-mini")
 
 # Task and benchmark configuration
 TASK_NAME = os.getenv("TASK_NAME", "easy_missing_and_dupes")
@@ -176,22 +174,23 @@ def get_model_action(
 
 def main() -> None:
     """Main inference loop."""
-    if not API_KEY:
-        raise ValueError("HF_TOKEN or API_KEY environment variable not set")
-
-    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
-    env = DataQualityTriageEnv(task_id=TASK_NAME)
-
     history: List[str] = []
     rewards: List[float] = []
     steps_taken = 0
     success = False
     final_score = 0.001
     terminal_error: Optional[str] = None
+    env: Optional[DataQualityTriageEnv] = None
 
     log_start(task=TASK_NAME, env=BENCHMARK, model=MODEL_NAME)
 
     try:
+        if not HF_TOKEN:
+            raise ValueError("HF_TOKEN environment variable not set")
+
+        client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+        env = DataQualityTriageEnv(task_id=TASK_NAME)
+
         # Reset environment
         obs = env.reset()
         obs_dict = obs.model_dump()
@@ -263,8 +262,13 @@ def main() -> None:
         success = final_score >= SUCCESS_SCORE_THRESHOLD and terminal_error is None
 
     except Exception as e:
-        terminal_error = f"episode_failed:{type(e).__name__}"
+        terminal_error = str(e)
     finally:
+        if env is not None and hasattr(env, "close"):
+            try:
+                env.close()
+            except Exception:
+                pass
         log_end(success=success, steps=steps_taken, rewards=rewards)
 
 
