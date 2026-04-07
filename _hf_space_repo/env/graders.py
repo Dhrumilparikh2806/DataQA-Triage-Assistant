@@ -40,3 +40,61 @@ def grade_task(
 
     score = (0.5 * quality_target_score) + (0.3 * validation_score) + (0.2 * budget_efficiency)
     return _bounded(score)
+
+
+def grade_easy_missing_and_dupes(
+    *,
+    task: TaskDefinition,
+    quality_report: Dict[str, int],
+    validation_passed: bool,
+    submitted: bool,
+    step_count: int,
+) -> float:
+    return grade_task(
+        task=task,
+        quality_report=quality_report,
+        validation_passed=validation_passed,
+        submitted=submitted,
+        step_count=step_count,
+    )
+
+
+def grade_medium_type_and_category(
+    *,
+    task: TaskDefinition,
+    quality_report: Dict[str, int],
+    validation_passed: bool,
+    submitted: bool,
+    step_count: int,
+) -> float:
+    return grade_task(
+        task=task,
+        quality_report=quality_report,
+        validation_passed=validation_passed,
+        submitted=submitted,
+        step_count=step_count,
+    )
+
+
+def grade_hard_conflicts_and_budget(
+    *,
+    task: TaskDefinition,
+    quality_report: Dict[str, int],
+    validation_passed: bool,
+    submitted: bool,
+    step_count: int,
+) -> float:
+    return grade_task(
+        task=task,
+        quality_report=quality_report,
+        validation_passed=validation_passed,
+        submitted=submitted,
+        step_count=step_count,
+    )
+
+
+GRADERS = {
+    "easy_missing_and_dupes": grade_easy_missing_and_dupes,
+    "medium_type_and_category": grade_medium_type_and_category,
+    "hard_conflicts_and_budget": grade_hard_conflicts_and_budget,
+}

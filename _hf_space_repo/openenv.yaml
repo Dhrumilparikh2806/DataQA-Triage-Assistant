@@ -19,3 +19,7 @@ tasks:
   - easy_missing_and_dupes
   - medium_type_and_category
   - hard_conflicts_and_budget
+task_graders:
+  easy_missing_and_dupes: env.graders:grade_easy_missing_and_dupes
+  medium_type_and_category: env.graders:grade_medium_type_and_category
+  hard_conflicts_and_budget: env.graders:grade_hard_conflicts_and_budget
