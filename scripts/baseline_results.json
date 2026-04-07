@@ -1,8 +1,8 @@
 {
   "scores": {
-    "easy_missing_and_dupes": 0.24444444444444444,
-    "medium_type_and_category": 0.325974025974026,
-    "hard_conflicts_and_budget": 0.20379310344827584
+    "easy_missing_and_dupes": 0.35585555555555565,
+    "medium_type_and_category": 0.4405597402597403,
+    "hard_conflicts_and_budget": 0.46515411140583557
   },
-  "aggregate_score": 0.2580705246222488
+  "aggregate_score": 0.4205231357403772
 }

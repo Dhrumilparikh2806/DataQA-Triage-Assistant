@@ -1,4 +1,5 @@
 from env.graders import grade_task
+from env.simulator import quality_score
 from env.tasks import get_task
 
 
@@ -33,3 +34,20 @@ def test_grade_improves_when_quality_improves() -> None:
     )
 
     assert good_score > bad_score
+
+
+def test_task_scores_stay_in_open_interval() -> None:
+    for task_id in ("easy_missing_and_dupes", "medium_type_and_category", "hard_conflicts_and_budget"):
+        task = get_task(task_id)
+        score = grade_task(
+            task=task,
+            quality_report=task.target_quality_report,
+            validation_passed=True,
+            submitted=True,
+            step_count=1,
+        )
+        assert 0.0 < score < 1.0
+
+
+def test_quality_score_stays_in_open_interval() -> None:
+    assert 0.0 < quality_score({"missing_values": 0, "duplicates": 0, "invalid_types": 0, "category_inconsistency": 0, "outliers": 0}) < 1.0

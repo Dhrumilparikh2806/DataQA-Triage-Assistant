@@ -33,5 +33,7 @@ def apply_action(quality_report: Dict[str, int], action: Action) -> Tuple[Dict[s
 
 def quality_score(quality_report: Dict[str, int]) -> float:
     total_issues = sum(max(0, v) for v in quality_report.values())
-    # Higher is better; bounded in [0, 1].
-    return 1.0 / (1.0 + float(total_issues))
+    # Keep the quality score strictly inside (0, 1) for validator compatibility.
+    raw_score = 1.0 / (1.0 + float(total_issues))
+    epsilon = 0.001
+    return max(epsilon, min(1.0 - epsilon, raw_score))
