@@ -157,7 +157,9 @@ TASK_CONFIGS = [
 ]
 
 # Lowercase aliases for validators that import module-level task registries.
-tasks = TASK_CONFIGS
+TASK_DEFINITIONS = list(TASKS.values())
+tasks = TASK_DEFINITIONS
+task_definitions = TASK_DEFINITIONS
 task_catalog = TASK_CONFIGS
 
 
@@ -168,4 +170,13 @@ def get_task(task_id: str) -> TaskDefinition:
     return TASKS[task_id]
 
 
-__all__ = ["TaskDefinition", "TASKS", "TASK_CONFIGS", "tasks", "task_catalog", "get_task"]
+__all__ = [
+    "TaskDefinition",
+    "TASKS",
+    "TASK_CONFIGS",
+    "TASK_DEFINITIONS",
+    "tasks",
+    "task_definitions",
+    "task_catalog",
+    "get_task",
+]

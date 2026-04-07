@@ -131,3 +131,20 @@ GRADERS = {
     "medium_type_and_category": grade_medium_type_and_category,
     "hard_conflicts_and_budget": grade_hard_conflicts_and_budget,
 }
+
+# Compatibility aliases for validators that look for package-level grader registries.
+TASK_GRADERS = GRADERS
+task_graders = GRADERS
+
+
+__all__ = [
+    "EPSILON",
+    "GRADE_PROFILES",
+    "GRADERS",
+    "TASK_GRADERS",
+    "task_graders",
+    "grade_task",
+    "grade_easy_missing_and_dupes",
+    "grade_medium_type_and_category",
+    "grade_hard_conflicts_and_budget",
+]

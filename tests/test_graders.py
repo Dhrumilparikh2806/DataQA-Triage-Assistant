@@ -60,3 +60,11 @@ def test_explicit_task_graders_registry() -> None:
         "hard_conflicts_and_budget",
     }
     assert expected.issubset(set(GRADERS.keys()))
+
+
+def test_package_exports_include_grader_registry() -> None:
+    from env import GRADERS as PACKAGE_GRADERS, TASK_GRADERS, task_graders
+
+    assert len(PACKAGE_GRADERS) == 3
+    assert len(TASK_GRADERS) == 3
+    assert len(task_graders) == 3

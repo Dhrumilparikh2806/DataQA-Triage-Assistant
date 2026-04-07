@@ -27,6 +27,10 @@ class DataQualityTriageEnv:
     def task_graders() -> dict[str, str]:
         return {entry["task_id"]: entry["grader"] for entry in TASK_CONFIGS}
 
+    @staticmethod
+    def task_grader_registry() -> dict[str, str]:
+        return DataQualityTriageEnv.task_graders()
+
     def reset(self) -> Observation:
         self._task = get_task(self.task_id)
         self._dataset = build_task_dataset(self._task.task_id, self._task.initial_quality_report)

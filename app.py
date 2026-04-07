@@ -6,6 +6,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
 from env.environment import DataQualityTriageEnv
+from env.graders import GRADERS
 from env.models import Action
 
 app = FastAPI(title="Data Quality Triage Assistant - #TEAM Hack-with-Pals", version="0.1.0")
@@ -86,23 +87,30 @@ def health() -> Dict[str, str]:
 @app.get("/tasks")
 def tasks() -> Dict[str, Any]:
     catalog = DataQualityTriageEnv.task_catalog()
+    grader_registry = DataQualityTriageEnv.task_grader_registry()
     return {
         "task_count": len(catalog),
         "tasks": catalog,
-        "task_graders": DataQualityTriageEnv.task_graders(),
+        "task_graders": grader_registry,
+        "graders": grader_registry,
+        "grader_count": len(grader_registry),
     }
 
 
 @app.get("/metadata")
 def metadata() -> Dict[str, Any]:
     catalog = DataQualityTriageEnv.task_catalog()
+    grader_registry = DataQualityTriageEnv.task_grader_registry()
     return {
         "name": "data-quality-triage-assistant",
         "description": "Data Quality Triage Assistant OpenEnv - Made by #TEAM Hack-with-Pals",
         "default_task": "easy_missing_and_dupes",
         "task_count": len(catalog),
         "tasks": catalog,
-        "task_graders": DataQualityTriageEnv.task_graders(),
+        "task_graders": grader_registry,
+        "graders": grader_registry,
+        "grader_count": len(grader_registry),
+        "grader_names": sorted(GRADERS.keys()),
     }
 
 

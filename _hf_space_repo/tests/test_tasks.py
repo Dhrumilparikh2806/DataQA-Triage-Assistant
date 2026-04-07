@@ -19,9 +19,14 @@ def test_each_task_has_explicit_grader() -> None:
         assert task.grader.startswith("env.graders:")
 
 def test_task_registry_exports_are_available() -> None:
-    from env import TASK_CONFIGS, TASKS as PACKAGE_TASKS, task_catalog, tasks
+    from env import GRADERS, TASK_CONFIGS, TASK_DEFINITIONS, TASKS as PACKAGE_TASKS, task_catalog, task_definitions, task_graders, tasks
 
     assert len(PACKAGE_TASKS) == 3
     assert len(TASK_CONFIGS) == 3
+    assert len(TASK_DEFINITIONS) == 3
     assert len(task_catalog) == 3
     assert len(tasks) == 3
+    assert len(task_definitions) == 3
+    assert len(GRADERS) == 3
+    assert len(task_graders) == 3
+    assert all(hasattr(task, "grader") for task in tasks)
