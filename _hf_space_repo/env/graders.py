@@ -2,9 +2,12 @@ from typing import Dict
 
 from .tasks import TaskDefinition
 
+# Small epsilon to ensure scores stay strictly within (0, 1)
+EPSILON = 0.001
 
 def _bounded(value: float) -> float:
-    return max(0.0, min(1.0, value))
+    """Bound value strictly to (EPSILON, 1-EPSILON) to ensure open interval."""
+    return max(EPSILON, min(1.0 - EPSILON, value))
 
 
 def grade_task(

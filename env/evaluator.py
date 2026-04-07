@@ -68,16 +68,22 @@ def _add_gate(
 
 
 def evaluate_report(report: Dict[str, Any], custom_thresholds: Dict[str, float] | None = None) -> Dict[str, Any]:
+    EPSILON = 0.001  # Match epsilon from graders.py
     difficulty = str(report.get("task", {}).get("difficulty", "medium"))
     thresholds = _merge_thresholds(difficulty, custom_thresholds)
 
     final_score = float(report.get("episode", {}).get("final_score", 0.0))
+    # Ensure final_score is also bounded strictly in (0, 1) if it came from the grader
+    final_score = max(EPSILON, min(1.0 - EPSILON, final_score))
+    
     invalid_action_count = float(report.get("governance", {}).get("invalid_action_count", 0.0))
     max_risk_score = float(report.get("governance", {}).get("summary", {}).get("max_risk_score", 100.0))
 
     initial_issues = float(report.get("quality_outcome", {}).get("initial_total_issues", 0.0))
     reduced_issues = float(report.get("quality_outcome", {}).get("issue_reduction", 0.0))
     issue_reduction_ratio = 0.0 if initial_issues <= 0 else (reduced_issues / initial_issues)
+    # Bound issue_reduction_ratio to stay in (0, 1)
+    issue_reduction_ratio = max(EPSILON, min(1.0 - EPSILON, issue_reduction_ratio))
 
     gates: List[Gate] = []
     _add_gate(
