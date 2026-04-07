@@ -52,3 +52,47 @@ def test_validation_bonus_and_progress_shaping() -> None:
     assert reward.progress_reward > 0.0
     assert reward.validation_bonus > 0.0
     assert components["category_improvements"]["missing_values"] == 4.0
+
+
+def test_step_reward_is_capped_below_one() -> None:
+    reward, _components = compute_reward(
+        quality_before={
+            "missing_values": 0,
+            "duplicates": 0,
+            "invalid_types": 0,
+            "category_inconsistency": 200,
+            "outliers": 0,
+        },
+        quality_after={
+            "missing_values": 0,
+            "duplicates": 0,
+            "invalid_types": 0,
+            "category_inconsistency": 0,
+            "outliers": 0,
+        },
+        operation="normalize_categories",
+        step_count=3,
+        step_budget=8,
+        submitted=False,
+        validation_passed=False,
+        repeated_action=False,
+        invalid_action=False,
+    )
+
+    assert 0.0 <= reward.total < 1.0
+
+
+def test_step_reward_never_negative() -> None:
+    reward, _components = compute_reward(
+        quality_before={"missing_values": 0},
+        quality_after={"missing_values": 0},
+        operation="submit",
+        step_count=8,
+        step_budget=8,
+        submitted=True,
+        validation_passed=False,
+        repeated_action=False,
+        invalid_action=False,
+    )
+
+    assert 0.0 <= reward.total < 1.0

@@ -19,6 +19,9 @@ ACTION_ALIGNMENT: Dict[str, str] = {
     "cap_outliers": "outliers",
 }
 
+MIN_STEP_REWARD = 0.0
+MAX_STEP_REWARD = 0.999
+
 
 def compute_reward(
     *,
@@ -90,6 +93,14 @@ def compute_reward(
         safety_penalty=safety_penalty,
         terminal_bonus=terminal_bonus,
     )
+    raw_total = reward.total
+    if raw_total > MAX_STEP_REWARD:
+        # Convert overflow into penalty so the final step reward stays below 1.0.
+        reward.safety_penalty += raw_total - MAX_STEP_REWARD
+    elif raw_total < MIN_STEP_REWARD:
+        # Lift negative totals to 0.0 to keep step rewards within the expected UI range.
+        reward.terminal_bonus += MIN_STEP_REWARD - raw_total
+
     components = {
         "improvement": improvement,
         "weighted_improvement": weighted_improvement,
@@ -103,6 +114,7 @@ def compute_reward(
         "repeat_streak": float(repeat_streak),
         "terminal_bonus": terminal_bonus,
         "category_improvements": category_improvements,
+        "raw_total": raw_total,
         "total": reward.total,
     }
     return reward, components
