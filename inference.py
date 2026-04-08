@@ -16,7 +16,7 @@ from env.models import Action
 from env.tasks import TASKS_LIST
 
 # MANDATORY: Environment variables
-HF_TOKEN = os.getenv("HF_TOKEN")
+API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 
@@ -178,13 +178,13 @@ def main() -> None:
     all_task_ids = [entry["task_id"] for entry in TASKS_LIST]
     selected_tasks = [TASK_NAME] if TASK_NAME not in {"all", "*"} else all_task_ids
 
-    if not HF_TOKEN:
+    if not API_KEY:
         # Keep hard failure explicit to satisfy evaluation contract.
         log_start(task="bootstrap", env=BENCHMARK, model=MODEL_NAME)
         log_end(success=False, steps=0, score=0.001, rewards=[])
-        raise ValueError("HF_TOKEN environment variable not set")
+        raise ValueError("Set HF_TOKEN or API_KEY environment variable")
 
-    client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
 
     for task_id in selected_tasks:
         history: List[str] = []
