@@ -150,6 +150,36 @@ TASKS: TaskRegistry = TaskRegistry({
     ),
 })
 
+# Plain literal registries for static validators/review tools.
+TASKS_LIST = [
+    {
+        "task_id": "easy_missing_and_dupes",
+        "difficulty": "easy",
+        "grader": "env.graders:grade_easy_missing_and_dupes",
+        "step_budget": 8,
+    },
+    {
+        "task_id": "medium_type_and_category",
+        "difficulty": "medium",
+        "grader": "env.graders:grade_medium_type_and_category",
+        "step_budget": 10,
+    },
+    {
+        "task_id": "hard_conflicts_and_budget",
+        "difficulty": "hard",
+        "grader": "env.graders:grade_hard_conflicts_and_budget",
+        "step_budget": 12,
+    },
+]
+
+TASKS_WITH_GRADERS = [
+    {
+        "task_id": entry["task_id"],
+        "grader": entry["grader"],
+    }
+    for entry in TASKS_LIST
+]
+
 # Compatibility metadata for validators that scan Python modules directly.
 TASK_CONFIGS = [
     {
@@ -180,6 +210,8 @@ def get_task(task_id: str) -> TaskDefinition:
 __all__ = [
     "TaskDefinition",
     "TASKS",
+    "TASKS_LIST",
+    "TASKS_WITH_GRADERS",
     "TASK_CONFIGS",
     "TASK_DEFINITIONS",
     "tasks",

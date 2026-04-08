@@ -26,9 +26,11 @@ def test_tasks_registry_iterates_over_task_objects() -> None:
 
 
 def test_task_registry_exports_are_available() -> None:
-    from env import GRADERS, TASK_CONFIGS, TASK_DEFINITIONS, TASKS as PACKAGE_TASKS, task_catalog, task_definitions, task_graders, tasks
+    from env import GRADERS, TASK_CONFIGS, TASK_DEFINITIONS, TASKS as PACKAGE_TASKS, TASKS_LIST, TASKS_WITH_GRADERS, task_catalog, task_definitions, task_graders, tasks
 
     assert len(PACKAGE_TASKS) == 3
+    assert len(TASKS_LIST) == 3
+    assert len(TASKS_WITH_GRADERS) == 3
     assert len(TASK_CONFIGS) == 3
     assert len(TASK_DEFINITIONS) == 3
     assert len(task_catalog) == 3
@@ -37,3 +39,11 @@ def test_task_registry_exports_are_available() -> None:
     assert len(GRADERS) == 3
     assert len(task_graders) == 3
     assert all(hasattr(task, "grader") for task in tasks)
+
+
+def test_literal_task_list_has_three_difficulties_and_graders() -> None:
+    from env import TASKS_LIST
+
+    difficulties = {entry["difficulty"] for entry in TASKS_LIST}
+    assert difficulties == {"easy", "medium", "hard"}
+    assert all(str(entry["grader"]).startswith("env.graders:") for entry in TASKS_LIST)
