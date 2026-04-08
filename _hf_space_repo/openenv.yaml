@@ -70,5 +70,19 @@ tasks_with_graders:
     grader: env.graders:grade_medium_type_and_category
   - task_id: hard_conflicts_and_budget
     grader: env.graders:grade_hard_conflicts_and_budget
+task_configs:
+  - task_id: easy_missing_and_dupes
+    grader: env.graders:grade_easy_missing_and_dupes
+    difficulty: easy
+  - task_id: medium_type_and_category
+    grader: env.graders:grade_medium_type_and_category
+    difficulty: medium
+  - task_id: hard_conflicts_and_budget
+    grader: env.graders:grade_hard_conflicts_and_budget
+    difficulty: hard
+task_ids:
+  - easy_missing_and_dupes
+  - medium_type_and_category
+  - hard_conflicts_and_budget
 tasks_count: 3
 graders_count: 3

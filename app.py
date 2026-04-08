@@ -88,12 +88,20 @@ def health() -> Dict[str, str]:
 def tasks() -> Dict[str, Any]:
     catalog = DataQualityTriageEnv.task_catalog()
     grader_registry = DataQualityTriageEnv.task_grader_registry()
+    tasks_by_id = {entry.get("task_id", ""): entry for entry in catalog if entry.get("task_id")}
+    tasks_with_graders = [
+        {"task_id": task_id, "grader": grader}
+        for task_id, grader in sorted(grader_registry.items())
+    ]
     return {
         "task_count": len(catalog),
         "tasks_count": len(catalog),
         "tasks_with_graders_count": len(grader_registry),
         "tasks": catalog,
+        "tasks_by_id": tasks_by_id,
+        "task_configs": catalog,
         "task_definitions": catalog,
+        "tasks_with_graders": tasks_with_graders,
         "task_ids": sorted(grader_registry.keys()),
         "task_graders": grader_registry,
         "graders": grader_registry,
@@ -105,6 +113,11 @@ def tasks() -> Dict[str, Any]:
 def metadata() -> Dict[str, Any]:
     catalog = DataQualityTriageEnv.task_catalog()
     grader_registry = DataQualityTriageEnv.task_grader_registry()
+    tasks_by_id = {entry.get("task_id", ""): entry for entry in catalog if entry.get("task_id")}
+    tasks_with_graders = [
+        {"task_id": task_id, "grader": grader}
+        for task_id, grader in sorted(grader_registry.items())
+    ]
     return {
         "name": "data-quality-triage-assistant",
         "description": "Data Quality Triage Assistant OpenEnv - Made by #TEAM Hack-with-Pals",
@@ -113,7 +126,10 @@ def metadata() -> Dict[str, Any]:
         "tasks_count": len(catalog),
         "tasks_with_graders_count": len(grader_registry),
         "tasks": catalog,
+        "tasks_by_id": tasks_by_id,
+        "task_configs": catalog,
         "task_definitions": catalog,
+        "tasks_with_graders": tasks_with_graders,
         "task_ids": sorted(grader_registry.keys()),
         "task_graders": grader_registry,
         "graders": grader_registry,
