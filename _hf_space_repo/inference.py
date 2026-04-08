@@ -13,14 +13,15 @@ from openai import OpenAI
 
 from env.environment import DataQualityTriageEnv
 from env.models import Action
+from env.tasks import TASKS_LIST
 
 # MANDATORY: Environment variables
 HF_TOKEN = os.getenv("HF_TOKEN")
-API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
-MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4.1-mini")
+API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 
 # Task and benchmark configuration
-TASK_NAME = os.getenv("TASK_NAME", "easy_missing_and_dupes")
+TASK_NAME = os.getenv("TASK_NAME", "all")
 BENCHMARK = os.getenv("BENCHMARK", "data-quality-triage-assistant")
 MAX_STEPS = 16
 TEMPERATURE = 0.7
@@ -174,104 +175,105 @@ def get_model_action(
 
 def main() -> None:
     """Main inference loop."""
-    history: List[str] = []
-    rewards: List[float] = []
-    steps_taken = 0
-    success = False
-    final_score = 0.001
-    score = 0.001
-    terminal_error: Optional[str] = None
-    env: Optional[DataQualityTriageEnv] = None
+    all_task_ids = [entry["task_id"] for entry in TASKS_LIST]
+    selected_tasks = [TASK_NAME] if TASK_NAME not in {"all", "*"} else all_task_ids
 
-    log_start(task=TASK_NAME, env=BENCHMARK, model=MODEL_NAME)
+    if not HF_TOKEN:
+        # Keep hard failure explicit to satisfy evaluation contract.
+        log_start(task="bootstrap", env=BENCHMARK, model=MODEL_NAME)
+        log_end(success=False, steps=0, score=0.001, rewards=[])
+        raise ValueError("HF_TOKEN environment variable not set")
 
-    try:
-        if not HF_TOKEN:
-            raise ValueError("HF_TOKEN environment variable not set")
+    client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
 
-        client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
-        env = DataQualityTriageEnv(task_id=TASK_NAME)
+    for task_id in selected_tasks:
+        history: List[str] = []
+        rewards: List[float] = []
+        steps_taken = 0
+        success = False
+        final_score = 0.001
+        score = 0.001
+        terminal_error: Optional[str] = None
+        env: Optional[DataQualityTriageEnv] = None
 
-        # Reset environment
-        obs = env.reset()
-        obs_dict = obs.model_dump()
-        last_reward = 0.0
+        log_start(task=task_id, env=BENCHMARK, model=MODEL_NAME)
+        try:
+            env = DataQualityTriageEnv(task_id=task_id)
 
-        for step in range(1, MAX_STEPS + 1):
-            # Get action from model
-            action_dict, model_error = get_model_action(client, step, obs_dict, last_reward, history)
+            # Reset environment
+            obs = env.reset()
+            obs_dict = obs.model_dump()
+            last_reward = 0.0
 
-            controlled_error = model_error
+            for step in range(1, MAX_STEPS + 1):
+                action_dict, model_error = get_model_action(client, step, obs_dict, last_reward, history)
 
-            # Create Action object
-            try:
-                action = Action(**action_dict)
-            except Exception as exc:
-                controlled_error = f"invalid_action_payload:{type(exc).__name__}"
-                action = Action(operation="inspect_schema", target_columns=[], parameters={})
+                controlled_error = model_error
 
-            # Step environment
-            try:
-                obs_result, reward_obj, done, info = env.step(action)
-            except Exception as exc:
-                # Emit a terminal STEP with controlled error to preserve evaluator parsing.
-                reward = 0.0
+                try:
+                    action = Action(**action_dict)
+                except Exception as exc:
+                    controlled_error = f"invalid_action_payload:{type(exc).__name__}"
+                    action = Action(operation="inspect_schema", target_columns=[], parameters={})
+
+                try:
+                    obs_result, reward_obj, done, info = env.step(action)
+                except Exception as exc:
+                    reward = 0.0
+                    rewards.append(reward)
+                    steps_taken = step
+                    controlled_error = f"env_step_failed:{type(exc).__name__}"
+                    log_step(
+                        step=step,
+                        action=f"{action.operation}({','.join(action.target_columns)})",
+                        reward=reward,
+                        done=True,
+                        error=controlled_error,
+                    )
+                    terminal_error = controlled_error
+                    break
+
+                obs_dict = obs_result.model_dump()
+
+                reward = reward_obj.total if hasattr(reward_obj, "total") else 0.0
+                info_error = info.get("error") if isinstance(info, dict) else None
+                error = controlled_error or info_error
+
                 rewards.append(reward)
                 steps_taken = step
-                controlled_error = f"env_step_failed:{type(exc).__name__}"
+                last_reward = reward
+
+                if isinstance(info, dict):
+                    info_final_score = info.get("final_score")
+                    if isinstance(info_final_score, (int, float)):
+                        final_score = float(info_final_score)
+
+                action_str = f"{action.operation}({','.join(action.target_columns)})"
                 log_step(
                     step=step,
-                    action=f"{action.operation}({','.join(action.target_columns)})",
+                    action=action_str,
                     reward=reward,
-                    done=True,
-                    error=controlled_error,
+                    done=done,
+                    error=error,
                 )
-                terminal_error = controlled_error
-                break
 
-            obs_dict = obs_result.model_dump()
+                history.append(f"Step {step}: {action_str} -> {reward:+.2f}")
 
-            reward = reward_obj.total if hasattr(reward_obj, "total") else 0.0
-            info_error = info.get("error") if isinstance(info, dict) else None
-            error = controlled_error or info_error
+                if done:
+                    break
 
-            rewards.append(reward)
-            steps_taken = step
-            last_reward = reward
+            score = min(max(final_score, 0.0), 1.0)
+            success = final_score >= SUCCESS_SCORE_THRESHOLD and terminal_error is None
 
-            if isinstance(info, dict):
-                info_final_score = info.get("final_score")
-                if isinstance(info_final_score, (int, float)):
-                    final_score = float(info_final_score)
-
-            # Log step
-            action_str = f"{action.operation}({','.join(action.target_columns)})"
-            log_step(
-                step=step,
-                action=action_str,
-                reward=reward,
-                done=done,
-                error=error,
-            )
-
-            history.append(f"Step {step}: {action_str} -> {reward:+.2f}")
-
-            if done:
-                break
-
-        # Compute success from environment final_score on terminal step.
-        score = min(max(final_score, 0.0), 1.0)
-        success = final_score >= SUCCESS_SCORE_THRESHOLD and terminal_error is None
-
-    except Exception as e:
-        terminal_error = str(e)
-    finally:
-        if env is not None and hasattr(env, "close"):
-            try:
-                env.close()
-            except Exception:
-                pass
-        log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
+        except Exception as exc:
+            terminal_error = str(exc)
+        finally:
+            if env is not None and hasattr(env, "close"):
+                try:
+                    env.close()
+                except Exception:
+                    pass
+            log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
 
 
 if __name__ == "__main__":
